@@ -9,7 +9,7 @@ ocamlbuild -use-ocamlfind finalcheck.byte
 if [[ $? -ne 0 ]]; then
   cat <<EOF
 ===========================================================
-WARNING: Your code currently does not compile. 
+WARNING: Your code currently does not compile.
 ===========================================================
 EOF
   exit 1
@@ -33,4 +33,4 @@ WARNING: Unable to find a working MD5 command
 EOF
 fi
 
-$MD5 search_src.zip
+$MD5 adv.zip
