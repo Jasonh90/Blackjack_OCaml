@@ -8,10 +8,7 @@ type card = {
 }
 type deck = card list
 
-type player = {
-  name: string;
-  hand: deck;
-}
+exception EmptyDeck
 
 let rec add_cards x lst =
   if x = 0 then lst else
@@ -26,11 +23,12 @@ let make_deck = add_cards 13 []
 let shuffle = 
   failwith "unimplemented"
 
-let deal x = 
-  let hand = (List.hd x) :: [] in (List.hd (List.tl x)) :: hand
 
-let hit x hand = 
-  List.hd x :: hand
+let rec deal deck hand num = 
+  if num = 0 then (deck, hand) 
+  else match deck with 
+    | [] ->  raise EmptyDeck
+    | h::t -> deal t (h::hand) (num-1)
 
 let rec total acc = function
   |[] -> acc
