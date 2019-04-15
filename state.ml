@@ -2,14 +2,14 @@ open Adventure
 
 (** The type [game_status] represents status of game*)
 type game_status = 
-  | Winner of string
+  | Winner of string list
   | Playing
   | End (** All players busted *)
 
 (** The type [player_status] represents status of player*)
 type player_status = 
   | Playing
-  | Check
+  | Checked
   | Busted
 
 (** The type [player] contains player's information and status in game *)
@@ -97,4 +97,22 @@ let next_turn state =
     | _ -> failwith "No such player" in
   {state with current_player_name=(next_player state.players)}
 
-(* let check_game_status state = *)
+(** *)
+let rec get_winner players (winner:string list) score= 
+  match players with 
+  | [] -> Winner winner
+  | h::t -> let player_score = calculate_score h.hand in
+    if player_score > score then get_winner t (h.name::[]) player_score
+    else if player_score = score then get_winner t (h.name::winner) score
+    else get_winner t winner score
+
+let check_game_status state =
+  let players = state.players in
+  let rec check_players players_lst all_players_busted : game_status = 
+    match players_lst with
+    | [] -> if all_players_busted then End else get_winner players [] 0
+    | h::t when h.status=Playing -> Playing
+    | h::t when h.status=Busted -> check_players t true
+    | h::t when h.status=Checked -> check_players t false
+    | _ -> failwith "no match"
+  in check_players players false
