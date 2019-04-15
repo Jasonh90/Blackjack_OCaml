@@ -1,3 +1,37 @@
 
 
-type card = unit
+type suit = Clubs | Diamonds | Hearts | Spades
+
+type card = {
+  number: int;
+  suit: suit;
+}
+type deck = card list
+
+type player = {
+  name: string;
+  hand: deck;
+}
+
+let rec add_cards x lst =
+  if x = 0 then lst else
+    let club = {number = x; suit = Clubs} :: lst 
+    in let heart = {number = x; suit = Hearts} :: club 
+    in let diamond = {number = x; suit = Diamonds} :: heart 
+    in let spade = {number = x; suit = Spades} :: diamond
+    in add_cards (x-1) (spade)
+
+let make_deck = add_cards 13 []
+
+let shuffle = 
+  failwith "unimplemented"
+
+let deal x = 
+  let hand = (List.hd x) :: [] in (List.hd (List.tl x)) :: hand
+
+let hit x hand = 
+  List.hd x :: hand
+
+let rec total acc = function
+  |[] -> acc
+  |h :: t -> total (acc + h.number) t
