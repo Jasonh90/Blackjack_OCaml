@@ -11,14 +11,12 @@ type card
 
 type deck
 
-type player
+exception EmptyDeck
 
 val make_deck : deck
 
 val shuffle : deck -> deck
 
-val deal : deck -> deck
-
-val hit : deck -> deck -> deck
+val deal : deck -> deck -> int -> deck*deck
 
 val total: int -> deck -> int
