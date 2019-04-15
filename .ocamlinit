@@ -4,3 +4,4 @@
 #load "adventure.cmo";;
 #load "command.cmo";;
 #load "state.cmo";;
+#require "qcheck";;

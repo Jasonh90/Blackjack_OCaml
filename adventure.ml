@@ -34,3 +34,7 @@ let rec deal deck hand num =
 let rec total acc = function
   |[] -> acc
   |h :: t -> total (acc + h.number) t
+
+(** [shuffle lst] is a random permutation of [lst]. *)
+let shuffle lst =
+  QCheck.Gen.(generate1 (shuffle_l lst))
