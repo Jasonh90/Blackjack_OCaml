@@ -21,6 +21,6 @@ val shuffle : deck -> deck
 
 val deal : deck -> deck -> int -> deck*deck
 
-val total : int -> deck -> int
+val calculate_score : deck -> int
 
 val shuffle : deck -> deck

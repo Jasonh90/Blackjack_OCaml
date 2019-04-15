@@ -1,3 +1,5 @@
+open State
+
 let suit_style = function
   | "Spades" -> "\xE2\x99\xA0"
   | "Clubs" -> "\xE2\x99\xA3"
@@ -74,19 +76,21 @@ let card_style num s =
 
 
 (** [play_game f] . *)
-let play_game num =
-  for i = 1 to 13 do card_style i "Spades";card_style i "Clubs";card_style i "Diamonds";card_style i "Hearts"done
-
-(** [main ()] prompts for the game to play, then starts it. *)
-let main () =
-  ANSITerminal.(print_string [white]
+let play_game state =
+  (* for i = 1 to 13 do card_style i "Spades";card_style i "Clubs";card_style i "Diamonds";card_style i "Hearts"done *)
+  ANSITerminal.(print_string [white;Bold]
                   "\n\nWelcome to  Blackjack.\n");
-  print_endline "Get ready for a game of Blackjack.\n";
-  print_string  "> ";
-  let rec x  = read_line () in
-  match x with
-  | exception End_of_file -> ()
-  | num -> play_game (int_of_string num)
+
+  (** [main ()] prompts for the game to play, then starts it. *)
+  let main () =
+    ANSITerminal.(print_string [white;Bold]
+                    "\n\nWelcome to  Blackjack.\n");
+    print_endline "Get ready for a game of Blackjack.\n";
+    print_string "Enter your name.\n\n";
+    print_string "> ";
+    match read_line () with
+    | exception End_of_file -> ()
+    | name -> let state = init_state name in play_game state
 
 (* Execute the game engine. *)
 let () = main ()

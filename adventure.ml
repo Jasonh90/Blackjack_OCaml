@@ -31,9 +31,12 @@ let rec deal deck hand num =
     | [] ->  raise EmptyDeck
     | h::t -> deal t (h::hand) (num-1)
 
-let rec total acc = function
-  |[] -> acc
-  |h :: t -> total (acc + h.number) t
+let calculate_score hand = 
+  let rec total deck acc = 
+    match deck with
+    |[] -> acc
+    |h :: t -> total t (acc + h.number) in
+  total hand 0
 
 (** [shuffle lst] is a random permutation of [lst]. *)
 let shuffle lst =
