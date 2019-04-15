@@ -59,6 +59,10 @@ let get_hand state =
     | _ -> failwith "No such player" 
   in match_player state.players
 
+(** [get_current_player_name state] gets name of current player*)
+let get_current_player_name state = 
+  state.current_player_name
+
 
 (** [hit state] returns an updated state after dealing out a card to the player *)
 let hit state = 
@@ -97,8 +101,9 @@ let next_turn state =
     | _ -> failwith "No such player" in
   {state with current_player_name=(next_player state.players)}
 
-(** *)
-let rec get_winner players (winner:string list) score= 
+(** [get_winner players winner score] computes the names of winners of the game and returns
+    Winner game_status*)
+let rec get_winner players winner score= 
   match players with 
   | [] -> Winner winner
   | h::t -> let player_score = calculate_score h.hand in
@@ -106,6 +111,10 @@ let rec get_winner players (winner:string list) score=
     else if player_score = score then get_winner t (h.name::winner) score
     else get_winner t winner score
 
+(** [check_game_status state] returns game_status according to all player's state. If at least 
+    one player is [Playing], return game_status [Playing]. If all players are [Busted], return [End].
+    If there are no [Playing] player_status and at least one [Checked], return [Winner] with string
+    list of player names that won.*)
 let check_game_status state =
   let players = state.players in
   let rec check_players players_lst all_players_busted : game_status = 
