@@ -19,4 +19,6 @@ val get_hand : t -> Adventure.deck
 
 val hit : t -> t 
 
-val check : t -> t
+(* val check : t -> t *)
+
+val print_init_hand : t -> unit

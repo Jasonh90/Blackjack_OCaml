@@ -58,3 +58,5 @@ let hit state =
   in match_player state.players []
 
 let check state = failwith "Unimplemented"
+
+let print_init_hand (state : t) : unit = print_deck (get_hand state)
