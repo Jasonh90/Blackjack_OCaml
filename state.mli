@@ -5,5 +5,5 @@
 *)
 
 (** The abstract type of values representing the game state. *)
-type t 
+type t
 
