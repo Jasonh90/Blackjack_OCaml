@@ -1,3 +1,3 @@
 
 
-type t = unit
+type card = unit

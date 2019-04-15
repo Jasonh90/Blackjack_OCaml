@@ -5,5 +5,5 @@
 *)
 
 (** The abstract type of values representing adventures. *)
-type t
+type card
 
