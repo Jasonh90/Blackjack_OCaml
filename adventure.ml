@@ -20,9 +20,10 @@ let rec add_cards x lst =
 
 let make_deck = add_cards 13 []
 
+let empty_deck = []
+
 let shuffle = 
   failwith "unimplemented"
-
 
 let rec deal deck hand num = 
   if num = 0 then (deck, hand) 

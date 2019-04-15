@@ -17,9 +17,9 @@ let make_player str hand : player =
 
 let init_state player_name = 
   let deck = make_deck in (* initialize deck *)
-  let deal_to_player = deal deck [] 2 in (* new deck, player hand *)
+  let deal_to_player = deal deck empty_deck 2 in (* new deck, player hand *)
   let new_deck = fst deal_to_player in
-  let deal_to_dealer = deal new_deck [] 2 in (* new deck, dealer hand *)
+  let deal_to_dealer = deal new_deck empty_deck 2 in (* new deck, dealer hand *)
 
   (* create players *)
   let player = make_player player_name (snd deal_to_player) in

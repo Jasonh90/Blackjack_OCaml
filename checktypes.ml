@@ -1,12 +1,11 @@
 module type AdventureSig = sig
-  type t
-  
+
 end
 
 module AdventureCheck : AdventureSig = Adventure
 
 module type CommandSig = sig
-  
+
 end
 
 module CommandCheck : CommandSig = Command
