@@ -80,6 +80,7 @@ let hit state =
     | _ -> failwith "No such player" 
   in match_player state.players []
 
+let print_init_hand (state : t) : unit = print_deck (get_hand state)
 
 (** [check state] returns a new state with no change in player's hand*)
 let check state =

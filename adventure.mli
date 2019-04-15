@@ -24,3 +24,9 @@ val deal : deck -> deck -> int -> deck*deck
 val calculate_score : deck -> int
 
 val shuffle : deck -> deck
+
+val print_deck : deck -> unit
+
+val print_deck_col : deck -> unit
+
+val print_last_card : deck -> unit

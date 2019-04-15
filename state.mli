@@ -31,6 +31,8 @@ val get_hand : t -> Adventure.deck
 (** [hit state] returns a new state after dealing out a card to the player *)
 val hit : t -> t 
 
+val print_init_hand : t -> unit
+
 (** [check state] returns a new state with no change in player's hand*)
 val check : t -> t
 
