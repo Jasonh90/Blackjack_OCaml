@@ -120,7 +120,7 @@ let two_suit card = ANSITerminal.(print_string [on_black; Foreground White]
 let space () = ANSITerminal.(print_string [on_black; Foreground White] 
                                "          ")
 let space_inbtwn () = ANSITerminal.(print_string [Reset] 
-                               "   ")
+                                      "   ")
 let top_number card =
   ANSITerminal.(print_string [on_black; Foreground White] 
                   (" " ^ string_of_int(card.number) ^ "       "^(if card.number < 10 then " " else ""))) 
@@ -207,10 +207,11 @@ let print_card (card : card) (i : int) : unit =
     | 13 -> for i = 0 to 4 do if i = 0 || i = 4 then one_suit card else space () done; bot_num "K"
     | _ -> failwith "Wrong number"
 
+(** [print_deck deck] is the deck of cards side by side on screen. *)
 let print_deck (deck : deck) : unit = 
   for i = 0 to 6 do 
     for k = 0 to (List.length deck) -1 do
-      (print_card (List.nth deck k) i);space_inbtwn ()
+      (print_card (List.nth deck k) i); space_inbtwn ()
     done;
     next_line ()
   done
@@ -220,6 +221,7 @@ let rec print_deck_col (deck : deck) : unit =
   | [] -> ()
   | h::t -> (print_card1 h); print_deck_col t
 
+(** [print_last_card deck] is the deck of cards side by side on screen. *)
 let rec print_last_card (deck:deck) :unit = 
   match deck with 
   | h::t when t = [] -> print_card1 h
