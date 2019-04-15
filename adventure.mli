@@ -19,4 +19,6 @@ val shuffle : deck -> deck
 
 val deal : deck -> deck -> int -> deck*deck
 
-val total: int -> deck -> int
+val total : int -> deck -> int
+
+val shuffle : deck -> deck
