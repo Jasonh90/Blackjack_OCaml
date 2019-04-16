@@ -7,7 +7,7 @@ type t
 
 (** The type [game_status] represents status of game*)
 type game_status = 
-  | Winner of string
+  | Winner of string list
   | Playing
   | End (** All players busted *)
 
@@ -28,13 +28,22 @@ val init_state : string -> t
 (** [get_hand state] gets the hand of current player *)
 val get_hand : t -> Adventure.deck
 
-(** [hit state] returns a new state after dealing out a card to the player *)
+(** [get_current_player_name state] gets name of current player*)
+val get_current_player_name : t -> string
+
+(** [hit state] returns an updated state after dealing out a card to the player. If player is still
+    [Playing] status after new card is dealt, don't rotate turn. If player is [Busted],  rotate turn
+    to point to next player*)
 val hit : t -> t 
 
 val print_init_hand : t -> unit
 
-(** [check state] returns a new state with no change in player's hand*)
+(** [check state] returns an updates state with new player status. Also rotates turn
+    to point to next player*)
 val check : t -> t
 
-(** [next_turn state] returns new state with updated [current_player_name] field to point to next player*)
-val next_turn : t -> t
+(** [check_game_status state] returns game_status according to all player's state. If at least 
+    one player is [Playing], return game_status [Playing]. If all players are [Busted], return [End].
+    If there are no [Playing] player_status and at least one [Checked], return [Winner] with string
+    list of player names that won.*)
+val check_game_status : t -> game_status

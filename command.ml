@@ -1,6 +1,7 @@
 type command = 
   | Hit
   | Check
+  | Quit
 
 exception Malformed
 
@@ -10,4 +11,5 @@ exception Malformed
 let parse str = 
   if str = "hit" then Hit 
   else if str = "check" then Check
+  else if str = "quit" then Quit
   else raise Malformed
