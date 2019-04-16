@@ -17,10 +17,6 @@ let rec play (state: State.t) =
     ANSITerminal.(print_string [red;Bold] ("\n\n All players busted \n")); exit 0;
   | Playing -> 
     let current = State.get_current_player_name state in 
-    if current = "Dealer" 
-    then play (check state)
-  | Playing -> 
-    let current = State.get_current_player_name state in 
     if current = "Dealer" then play (dealer state)
     else print state;
     ANSITerminal.(print_string [red] ("It's " ^ current ^ " turn:"));
