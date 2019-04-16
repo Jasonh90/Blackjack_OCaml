@@ -4,7 +4,7 @@
    DESCRIPTION OF THIS MODULE.
 *)
 
-(** The abstract type of values representing adventures. *)
+(** The abstract type of values representing card suits. *)
 type suit
 
 type card

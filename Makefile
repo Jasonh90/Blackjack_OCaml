@@ -1,4 +1,4 @@
-MODULES=adventure command state main authors
+MODULES=game command state main authors
 OBJECTS=$(MODULES:=.cmo)
 MLS=$(MODULES:=.ml)
 MLIS=$(MODULES:=.mli)
