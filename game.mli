@@ -1,5 +1,5 @@
 (** 
-   Representation of static adventure data.
+   Representation of game functions.
 
    DESCRIPTION OF THIS MODULE.
 *)
@@ -37,7 +37,7 @@ val print_deck_col : deck -> unit
 val print_last_card : deck -> unit
 
 (** [print_deck_hide_first deck string] is the [deck] with the first card 
-   hidden on screen with the corresponding name [string]. *)
+    hidden on screen with the corresponding name [string]. *)
 val print_deck_hide_first : deck -> string -> unit
 
 (** [show_deck_pile deck i] prints on the screen the [deck] facing down with the 
