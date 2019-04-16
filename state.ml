@@ -41,7 +41,7 @@ let init_state player_name =
   let deal_to_dealer = deal new_deck empty_deck 2 in (* new deck, dealer hand *)
   (* create players *)
   let player = make_player player_name (snd deal_to_player) Playing in
-  let dealer = make_player "dealer" (snd deal_to_dealer) Playing in
+  let dealer = make_player "Dealer" (snd deal_to_dealer) Playing in
   (* return initialized state *)
   {
     players = [player; dealer];
@@ -57,6 +57,14 @@ let get_hand state =
     match players with 
     | h::t -> if h.name = current_player then h.hand else match_player t
     | _ -> failwith "No such player" 
+  in match_player state.players
+
+(** [get_hand state] gets the hand of [name]. *)
+let get_hand2 state name = 
+  let rec match_player players = 
+    match players with 
+    | h::t -> if h.name = name then h.hand else match_player t
+    | _ -> failwith "No such player (hand2)" 
   in match_player state.players
 
 (** [get_current_player_name state] gets name of current player*)
@@ -92,10 +100,22 @@ let hit state =
         }
       )
       else match_player t (acc@[h])
-    | _ -> failwith "No such player" 
+    | _ -> failwith "No such player (hit)" 
   in match_player state.players []
 
-let print_init_hand (state : t) : unit = print_deck_hide_first (get_hand state)
+let show_deck (state : t) = show_deck_pile state.card_deck (size state.card_deck)
+
+let print_hands (state : t) : unit = 
+
+  print_deck_hide_first (get_hand2 state "Dealer") "Dealer";
+  show_deck state;
+  print_deck (get_hand state) (get_current_player_name state)
+
+let print_winner state = 
+  let rec print = function
+    | h::t -> print_deck (get_hand2 state h.name) (h.name); print t
+    | [] -> ()
+  in print (List.rev state.players)
 
 (** [check state] returns an updates state with new player status. Also rotates turn
     to point to next player*)
@@ -113,12 +133,12 @@ let check state =
         }
       )
       else match_player t (acc@[h])
-    | _ -> failwith "No such player" 
+    | _ -> failwith "No such player (check)" 
   in match_player state.players []
 
 (** [get_winner players winner score] computes the names of winners of the game and returns
     Winner game_status*)
-let rec get_winner players winner score= 
+let rec get_winner players winner score = 
   match players with 
   | [] -> Winner winner
   | h::t -> let player_score = calculate_score h.hand in
@@ -140,3 +160,4 @@ let check_game_status state =
     | h::t when h.status=Checked -> check_players t false
     | _ -> failwith "no match"
   in check_players players false
+

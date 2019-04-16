@@ -26,6 +26,8 @@ let make_deck = shuffle (add_cards 13 [] 0)
 
 let empty_deck = []
 
+let size (deck : deck) = List.length deck 
+
 let rec deal deck hand num = 
   if num = 0 then (deck, hand) 
   else match deck with 
@@ -36,7 +38,7 @@ let calculate_score hand =
   let rec total deck acc = 
     match deck with
     |[] -> acc
-    |h :: t -> total t (acc + h.number) in
+    |h :: t -> if h.number > 9 then total t (acc + 10) else total t (acc + h.number) in
   total hand 0
 
 let suit_style = function
@@ -120,7 +122,7 @@ let one_suit card = ANSITerminal.(print_string [on_black; Foreground White]
                                     ("    " ^ (suit card) ^ "     "))
 let two_suit card = ANSITerminal.(print_string [on_black; Foreground White] 
                                     ("   " ^ (suit card) ^ " " ^ (suit card) ^ "    ")) 
-let space () = ANSITerminal.(print_string [on_black; Foreground White] 
+let space () = ANSITerminal.(print_string [on_black] 
                                "          ")
 let space_inbtwn () = ANSITerminal.(print_string [Reset] 
                                       "   ")
@@ -155,10 +157,12 @@ let hide_card (i : int) : unit =
     Requires: [i] < 7. [card] is a valid card. *)
 let print_card (card : card) (i : int) : unit = 
   match i,card.number with 
+  | 0,1 -> top_num "A"
   | 0,n when n < 11 -> top_number card 
   | 0,11 -> top_num "J" 
   | 0,12 -> top_num "Q" 
   | 0,13 -> top_num "K" 
+  | 6,1 -> bot_num "A"
   | 6,n when n < 11 -> bottom_number card
   | 6,11 -> bot_num "J" 
   | 6,12 -> bot_num "Q" 
@@ -185,17 +189,18 @@ let print_card (card : card) (i : int) : unit =
   | _ -> ()
 
 (** [print_deck deck] is the [deck] shown side by side on screen. *)
-let print_deck (dck : deck) : unit = 
-  for i=1 to 13 do
-    let deck = add_cards i [] (i-1) in
-    for i = 0 to 6 do 
-      for k = 0 to (List.length deck) - 1 do
-        (print_card (List.nth deck k) i); space_inbtwn ()
-      done;
-      next_line ()
+let print_deck (deck : deck) (name : string): unit = 
+  ANSITerminal.(print_string [cyan] (name^"'s hand:\n"));next_line();
+  (* for i=1 to 13 do
+     let deck = add_cards i [] (i-1) in *)
+  for i = 0 to 6 do 
+    for k = 0 to (List.length deck) - 1 do
+      (print_card (List.nth deck k) i); space_inbtwn ()
     done;
     next_line ()
-  done
+  done;
+  next_line ()
+(* done *)
 
 (** [print_deck_col deck] is the [deck] shown in a column on screen. *)
 let rec print_deck_col (deck : deck) : unit = 
@@ -211,11 +216,32 @@ let rec print_last_card (deck:deck) : unit =
   | _ -> ()
 
 (** [print_deck_hide_first deck] is the [deck] with the first card hidden on screen . *)
-let print_deck_hide_first (deck : deck) : unit = 
+let print_deck_hide_first (deck : deck) (name:string): unit = 
+  ANSITerminal.(print_string [magenta] (name^"'s hand:\n\n"));
   for i = 0 to 6 do 
     hide_card i; space_inbtwn ();
     for k = 1 to (List.length deck) - 1 do
       (print_card (List.nth deck k) i); space_inbtwn ()
     done;
     next_line ()
-  done;
+  done;next_line ()
+
+let deck_pile (i : int) (num : int) : unit = 
+  let two_suit_top () = ANSITerminal.(print_string [on_black; Foreground White] 
+                                        ("  " ^ suit_style Spades ^ "   " ^ suit_style Diamonds ^ "   ")) in
+  let two_suit_bot () = ANSITerminal.(print_string [on_black; Foreground White] 
+                                        ("  " ^ suit_style Hearts ^ "   " ^ suit_style Clubs ^ "   ")) in
+  let middle () = ANSITerminal.(print_string [on_black; Foreground White] 
+                                  ("    " ^ string_of_int(num) ^ (if num > 9 then "" else " ")  ^ "    ")) in
+  match i with 
+  | n when n mod 2 = 0 -> space ()
+  | 1 -> two_suit_top ()
+  | 3 -> middle ()
+  | 5 -> two_suit_bot ()
+  | _ -> failwith "i is not in between 0..5"
+
+let show_deck_pile deck num = 
+  ANSITerminal.(print_string [blue] ("\n\t Deck:\n"));
+  for i = 0 to 6 do 
+    space_inbtwn (); space_inbtwn (); deck_pile i num; next_line ()
+  done; next_line (); 

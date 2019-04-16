@@ -2,15 +2,19 @@ open Adventure
 open Command
 open State
 
+let print state = ANSITerminal.erase Above; print_hands state
+let printw state = ANSITerminal.erase Above; print_winner state
+
 let rec play (state: State.t) = 
   match check_game_status state with
-  |Winner x -> ANSITerminal.(print_string [blue;Bold] ("\n\n Winner! \n")); exit 0;
-  |End -> ANSITerminal.(print_string [red;Bold] ("\n\n All players busted \n")); exit 0;
-  |Playing -> let current = State.get_current_player_name state in 
-    if current = "dealer" then failwith "unimplemented"
-    else
-      ANSITerminal.(print_string [blue] ("\n\n It's your turn: " ^ current ^ "\n"));
-    print_string ("\n Would you like to hit or check? \n> ");
+  | Winner x -> printw state;ANSITerminal.(print_string [blue;Bold] ("\n\nWinner(s): ")); 
+    (List.map (fun y -> print_string (y^" ")) x); (print_string"\n\n"); exit 0;
+  | End -> ANSITerminal.(print_string [red;Bold] ("\n\n All players busted \n")); exit 0;
+  | Playing -> let current = State.get_current_player_name state in 
+    if current = "dealer" then play (check state)
+    else print state;
+    ANSITerminal.(print_string [red] ("It's " ^ current ^ " turn:"));
+    print_string (" Would you like to hit or check? \n> ");
     match parse (read_line ()) with 
     | Hit -> play (hit state)
     | Check -> play (check state)
@@ -21,7 +25,6 @@ let rec play (state: State.t) =
 (** [play_game f] . *)
 let play_game name =
   let game = init_state name in 
-  let x = print_init_hand game in 
   play game
 
 (** [main ()] prompts for the game to play, then starts it. *)

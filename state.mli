@@ -28,6 +28,9 @@ val init_state : string -> t
 (** [get_hand state] gets the hand of current player *)
 val get_hand : t -> Adventure.deck
 
+(** [get_hand state] gets the hand of [name] *)
+val get_hand2 : t -> string -> Adventure.deck
+
 (** [get_current_player_name state] gets name of current player*)
 val get_current_player_name : t -> string
 
@@ -36,7 +39,9 @@ val get_current_player_name : t -> string
     to point to next player*)
 val hit : t -> t 
 
-val print_init_hand : t -> unit
+val print_hands : t -> unit
+
+val print_winner : t -> unit
 
 (** [check state] returns an updates state with new player status. Also rotates turn
     to point to next player*)
@@ -47,3 +52,6 @@ val check : t -> t
     If there are no [Playing] player_status and at least one [Checked], return [Winner] with string
     list of player names that won.*)
 val check_game_status : t -> game_status
+
+
+val show_deck : t -> unit
