@@ -1,5 +1,3 @@
-
-
 type suit = Clubs | Diamonds | Hearts | Spades
 
 type card = {

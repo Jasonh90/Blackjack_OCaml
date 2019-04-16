@@ -1,4 +1,4 @@
-open Adventure
+open Game
 
 (** The type [game_status] represents status of game*)
 type game_status = 
@@ -142,8 +142,10 @@ let rec get_winner players winner score =
   match players with 
   | [] -> Winner winner
   | h::t -> let player_score = calculate_score h.hand in
-    if player_score > score then get_winner t (h.name::[]) player_score
-    else if player_score = score then get_winner t (h.name::winner) score
+    if h.status = Playing || h.status = Checked then 
+      (if player_score > score then get_winner t (h.name::[]) player_score
+       else if player_score = score then get_winner t (h.name::winner) score
+       else get_winner t winner score)
     else get_winner t winner score
 
 (** [check_game_status state] returns game_status according to all player's state. If at least 
@@ -156,7 +158,7 @@ let check_game_status state =
     match players_lst with
     | [] -> if all_players_busted then End else get_winner players [] 0
     | h::t when h.status=Playing -> Playing
-    | h::t when h.status=Busted -> check_players t true
+    | h::t when h.status=Busted -> check_players t (true && all_players_busted)
     | h::t when h.status=Checked -> check_players t false
     | _ -> failwith "no match"
   in check_players players false

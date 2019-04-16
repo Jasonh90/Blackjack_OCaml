@@ -1,4 +1,4 @@
-open Adventure
+open Game
 open Command
 open State
 
