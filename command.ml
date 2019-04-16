@@ -1,6 +1,7 @@
 type command = 
   | Hit
   | Check
+  | Quit
 
 exception Malformed
 
