@@ -9,7 +9,7 @@ type game_status =
 (** The type [player_status] represents status of player*)
 type player_status = 
   | Playing
-  | Check
+  | Checked
   | Busted
 
 (** The type [player] contains player's information and status in game *)
@@ -80,7 +80,7 @@ let hit state =
     | _ -> failwith "No such player" 
   in match_player state.players []
 
-let print_init_hand (state : t) : unit = print_deck (get_hand state)
+let print_init_hand (state : t) : unit = print_deck_hide_first (get_hand state)
 
 (** [check state] returns a new state with no change in player's hand*)
 let check state =

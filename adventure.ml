@@ -10,19 +10,19 @@ type deck = card list
 
 exception EmptyDeck
 
-let rec add_cards x lst =
-  if x = 0 then lst else
+let rec add_cards x lst a =
+  if x = a then lst else
     let club = {number = x; suit = Clubs} :: lst 
     in let heart = {number = x; suit = Hearts} :: club 
     in let diamond = {number = x; suit = Diamonds} :: heart 
     in let spade = {number = x; suit = Spades} :: diamond
-    in add_cards (x-1) (spade)
+    in add_cards (x-1) (spade) a
 
 (** [shuffle lst] is a random permutation of [lst]. *)
 let shuffle lst =
   QCheck.Gen.(generate1 (shuffle_l lst))
 
-let make_deck = (add_cards 13 [])
+let make_deck = shuffle (add_cards 13 [] 0)
 
 let empty_deck = []
 
@@ -137,96 +137,85 @@ let bot_num n =
   ANSITerminal.(print_string [on_black; Foreground White] 
                   ("        " ^ n ^ " "))
 
+let hide_card (i : int) : unit = 
+  let two_suit_top () = ANSITerminal.(print_string [on_black; Foreground White] 
+                                        ("  " ^ suit_style Spades ^ "   " ^ suit_style Diamonds ^ "   ")) in
+  let two_suit_bot () = ANSITerminal.(print_string [on_black; Foreground White] 
+                                        ("  " ^ suit_style Hearts ^ "   " ^ suit_style Clubs ^ "   ")) in
+  let middle () = ANSITerminal.(print_string [on_black; Foreground White] 
+                                  ("  HIDDEN  ")) in
+  match i with 
+  | n when n mod 2 = 0 -> space ()
+  | 1 -> two_suit_top ()
+  | 3 -> middle ()
+  | 5 -> two_suit_bot ()
+  | _ -> failwith "i is not in between 0..5"
+
+(** [print_card card] helps print the deck of cards side by side. 
+    Requires: [i] < 7. [card] is a valid card. *)
 let print_card (card : card) (i : int) : unit = 
   match i,card.number with 
   | 0,n when n < 11 -> top_number card 
   | 0,11 -> top_num "J" 
   | 0,12 -> top_num "Q" 
   | 0,13 -> top_num "K" 
-  | 1,n when n = 1-> space ()
-  | 2,n when n = 1 -> space ()
-  | 3,n when n = 1 -> one_suit card
-  | 4,n when n = 1 -> space ()
-  | 5,n when n = 1 -> space ()
-  | 6,n when n = 1 -> bottom_number card
+  | 6,n when n < 11 -> bottom_number card
+  | 6,11 -> bot_num "J" 
+  | 6,12 -> bot_num "Q" 
+  | 6,13 -> bot_num "K" 
+  | n,1 when n <> 3 -> space ()
 
-  | 1,n when n = 2 -> space ()
-  | 2,n when n = 2 -> one_suit card
-  | 3,n when n = 2 -> space ()
-  | 4,n when n = 2 -> one_suit card
-  | 5,n when n = 2 -> space ()
-  | 6,n when n = 2 -> bottom_number card
+  | n,2 when n mod 2 = 1 -> space () 
+  | _,2  -> one_suit card
+  | n,3 when n mod 2 = 0 -> space ()
+  | _,3 -> one_suit card
 
-  | 1,n when n = 3 -> one_suit card
-  | 2,n when n = 3 -> space ()
-  | 3,n when n = 3 -> one_suit card
-  | 4,n when n = 3 -> space ()
-  | 5,n when n = 3 -> one_suit card
-  | 6,n when n = 3 -> bottom_number card
+  | n,4 when n mod 2 = 1 -> space ()
+  | _,4 -> two_suit card
 
-  | _ -> ();
-    match card.number with 
-    | 1 -> 
-      for i = 0 to 4 do
-        if i = 2 then one_suit card
-        else space ()
-      done; bottom_number card
-    | 2 -> 
-      for i = 0 to 4 do
-        if i mod 2 = 1 then one_suit card else space () done; 
-      bottom_number card
-    | 3 -> 
-      for i = 0 to 4 do 
-        if i mod 2 = 0 then one_suit card else space () done; 
-      bottom_number card
-    | 4 -> 
-      for i = 0 to 4 do 
-        if i mod 2 = 1 then two_suit card else space () done; 
-      bottom_number card
-    | 5 -> 
-      two_suit card; space (); one_suit card; space (); two_suit card; 
-      bottom_number card
-    | 6 -> 
-      for i = 0 to 4 do
-        if i mod 2 = 0 then two_suit card else space () done;
-      bottom_number card
-    | 7 -> 
-      two_suit card; one_suit card; two_suit card; space (); two_suit card;
-      bottom_number card
-    | 8 -> 
-      for i = 0 to 4 do
-        if i <> 2 then two_suit card else space () done;
-      bottom_number card
-    | 9 -> 
-      for i = 0 to 4 do
-        if i <> 1 then two_suit card else one_suit card done;
-      bottom_number card
-    | 10 -> 
-      for i = 0 to 4 do
-        two_suit card done;
-      bottom_number card
-    | 11 -> for i = 0 to 4 do if i = 0 || i = 4 then one_suit card else space () done; bot_num "J"
-    | 12 -> for i = 0 to 4 do if i = 0 || i = 4 then one_suit card else space () done; bot_num "Q"
-    | 13 -> for i = 0 to 4 do if i = 0 || i = 4 then one_suit card else space () done; bot_num "K"
-    | _ -> failwith "Wrong number"
+  | 1,5 | 1,6 | 1,7 | 3,6 | 3,7 | 5,5 | 5,6 | 5,7 | _,10 -> two_suit card
+  | 2,5 | 2,6 | 4,5 | 4,6 | 4,7 | 3,8 -> space ()
+  | 3,5 | 2,7 | 2,9 | 3,1 -> one_suit card
 
-(** [print_deck deck] is the deck of cards side by side on screen. *)
-let print_deck (deck : deck) : unit = 
-  for i = 0 to 6 do 
-    for k = 0 to (List.length deck) -1 do
-      (print_card (List.nth deck k) i); space_inbtwn ()
+  | n,8 when n <> 3 -> two_suit card
+  | n,9 when n <> 2-> two_suit card
+  | m,n when n > 10 && m < 5 && m > 1-> space ()
+  | _,n when n > 10 -> one_suit card
+
+  | _ -> ()
+
+(** [print_deck deck] is the [deck] shown side by side on screen. *)
+let print_deck (dck : deck) : unit = 
+  for i=1 to 13 do
+    let deck = add_cards i [] (i-1) in
+    for i = 0 to 6 do 
+      for k = 0 to (List.length deck) - 1 do
+        (print_card (List.nth deck k) i); space_inbtwn ()
+      done;
+      next_line ()
     done;
     next_line ()
   done
 
+(** [print_deck_col deck] is the [deck] shown in a column on screen. *)
 let rec print_deck_col (deck : deck) : unit = 
   match deck with 
   | [] -> ()
   | h::t -> (print_card1 h); print_deck_col t
 
-(** [print_last_card deck] is the deck of cards side by side on screen. *)
-let rec print_last_card (deck:deck) :unit = 
+(** [print_last_card deck] is the last card in the [deck] on screen. *)
+let rec print_last_card (deck:deck) : unit = 
   match deck with 
   | h::t when t = [] -> print_card1 h
   | h::t -> print_last_card t
   | _ -> ()
+
+(** [print_deck_hide_first deck] is the [deck] with the first card hidden on screen . *)
+let print_deck_hide_first (deck : deck) : unit = 
+  for i = 0 to 6 do 
+    hide_card i; space_inbtwn ();
+    for k = 1 to (List.length deck) - 1 do
+      (print_card (List.nth deck k) i); space_inbtwn ()
+    done;
+    next_line ()
+  done;
