@@ -12,8 +12,8 @@ let rec play (state: State.t) =
       ANSITerminal.(print_string [blue] ("\n\n It's your turn: " ^ current ^ "\n"));
     print_string ("\n Would you like to hit or check? \n> ");
     match parse (read_line ()) with 
-    | Hit -> failwith "unimplemented"
-    | Check -> failwith "unimplemented"
+    | Hit -> play (hit state)
+    | Check -> play (check state)
     | Quit -> ANSITerminal.(print_string [blue] ("\nGoodbye")); exit 0
 
 
