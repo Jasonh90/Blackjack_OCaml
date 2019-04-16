@@ -11,7 +11,7 @@ let rec play (state: State.t) =
     (List.map (fun y -> print_string (y^" ")) x); (print_string"\n\n"); exit 0;
   | End -> ANSITerminal.(print_string [red;Bold] ("\n\n All players busted \n")); exit 0;
   | Playing -> let current = State.get_current_player_name state in 
-    if current = "dealer" then play (check state)
+    if current = "Dealer" then play (check state)
     else print state;
     ANSITerminal.(print_string [red] ("It's " ^ current ^ " turn:"));
     print_string (" Would you like to hit or check? \n> ");
