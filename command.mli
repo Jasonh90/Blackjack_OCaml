@@ -7,6 +7,7 @@
 type command = 
   | Hit
   | Check
+  | Quit
 
 (** Raised when a malformed command is encountered. *)
 exception Malformed

@@ -31,16 +31,16 @@ val get_hand : t -> Adventure.deck
 (** [get_current_player_name state] gets name of current player*)
 val get_current_player_name : t -> string
 
-(** [hit state] returns a new state after dealing out a card to the player *)
+(** [hit state] returns an updated state after dealing out a card to the player. If player is still
+    [Playing] status after new card is dealt, don't rotate turn. If player is [Busted],  rotate turn
+    to point to next player*)
 val hit : t -> t 
 
 val print_init_hand : t -> unit
 
-(** [check state] returns a new state with no change in player's hand*)
+(** [check state] returns an updates state with new player status. Also rotates turn
+    to point to next player*)
 val check : t -> t
-
-(** [next_turn state] returns new state with updated [current_player_name] field to point to next player*)
-val next_turn : t -> t
 
 (** [check_game_status state] returns game_status according to all player's state. If at least 
     one player is [Playing], return game_status [Playing]. If all players are [Busted], return [End].

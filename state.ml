@@ -63,20 +63,31 @@ let get_hand state =
 let get_current_player_name state = 
   state.current_player_name
 
+(** [next_player_name players current players_after_current] returns name of next player
+    that is still in [Playing] status*)
+let next_player_name players current players_after_current = 
+  let rec next_turn lst = 
+    match lst with 
+    | h::t -> if h.status = Playing then h.name else next_turn t
+    | [] -> next_turn players in
+  next_turn players_after_current
 
-(** [hit state] returns an updated state after dealing out a card to the player *)
+(** [hit state] returns an updated state after dealing out a card to the player. If player is still
+    [Playing] status after new card is dealt, don't rotate turn. If player is [Busted],  rotate turn
+    to point to next player*)
 let hit state = 
   let current_player = state.current_player_name in
   let rec match_player players acc = (* find current player and deal out a new card *)
     match players with 
     | h::t -> if h.name = current_player then (
         let deal_to_player = deal state.card_deck h.hand 1 in (* new deck, new player hand *)
-        let new_status = if calculate_score (snd deal_to_player) > 21 then Busted else Playing in
-        let players = acc@[make_player (h.name) (snd deal_to_player) new_status]@t in
-        (** updated state. [current_player] is not modified.*)
+        let new_status = if calculate_score (snd deal_to_player) > 21 then Busted else Playing in (* determine new status *)
+        let players = acc@[make_player (h.name) (snd deal_to_player) new_status]@t in (* update current player's hand and status *)
+        (** updated state *)
         {
           players = players;
-          current_player_name = current_player;
+          current_player_name = if new_status = Playing then current_player (* Playing -> don't change turns *)
+            else next_player_name state.players current_player t; (* Busted -> find next player *)
           card_deck = (fst deal_to_player);
         }
       )
@@ -86,20 +97,24 @@ let hit state =
 
 let print_init_hand (state : t) : unit = print_deck (get_hand state)
 
-(** [check state] returns a new state with no change in player's hand*)
+(** [check state] returns an updates state with new player status. Also rotates turn
+    to point to next player*)
 let check state =
-  failwith "unimplemented"
-
-(** [next_turn state] returns new state with updated [current_player_name] field to point to next player*)
-let next_turn state = 
   let current_player = state.current_player_name in
-  let rec next_player players = (* find current player and return next player's name *)
+  let rec match_player players acc = (* find current player and deal out a new card *)
     match players with 
     | h::t -> if h.name = current_player then (
-        if t = [] then (List.hd players).name else (List.hd t).name
-      ) else next_player t
-    | _ -> failwith "No such player" in
-  {state with current_player_name=(next_player state.players)}
+        let players = acc@[make_player (h.name) h.hand Checked]@t in (* update current player's status *)
+        (** updated state *)
+        {
+          players = players;
+          current_player_name = next_player_name state.players current_player t; (* find next player *)
+          card_deck = state.card_deck;
+        }
+      )
+      else match_player t (acc@[h])
+    | _ -> failwith "No such player" 
+  in match_player state.players []
 
 (** [get_winner players winner score] computes the names of winners of the game and returns
     Winner game_status*)
