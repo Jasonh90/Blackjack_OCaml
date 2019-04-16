@@ -2,8 +2,9 @@ open Game
 open Command
 open State
 
-let print state = ANSITerminal.erase Above; print_hands state
+let print state =    print_hands state
 let printw state = ANSITerminal.erase Above; print_winner state
+let next_line () = ANSITerminal.(print_string [Reset] "\n\n")
 
 let rec play (state: State.t) = 
   match check_game_status state with
@@ -23,8 +24,11 @@ let rec play (state: State.t) =
     match parse (read_line ()) with 
     | Hit -> play (hit state)
     | Check -> play (check state)
-    | Quit -> ANSITerminal.(print_string [blue] ("\nGoodbye")); exit 0
-    | excepton Malformed -> print_string "Invalid command. Please try again."; play state
+    | Quit -> ANSITerminal.(print_string [blue] ("\nGoodbye\n\n")); exit 0
+    | exception Malformed -> ANSITerminal.(
+        print_string [on_white;red] "Invalid command. Please try again.");
+      next_line(); 
+      play state
 
 
 

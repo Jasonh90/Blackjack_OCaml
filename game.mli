@@ -36,10 +36,10 @@ val print_deck_col : deck -> unit
 (** [print_last_card deck] is the last card in the [deck] on screen. *)
 val print_last_card : deck -> unit
 
-(** [print_deck_hide_first deck string] is the [deck] with the first card 
-    hidden on screen with the corresponding name [string]. *)
+(** [print_deck_hide_first deck name] is the [deck] with the first card 
+    hidden on screen with the corresponding [name]. *)
 val print_deck_hide_first : deck -> string -> unit
 
-(** [show_deck_pile deck i] prints on the screen the [deck] facing down with the 
-   total number of cards [i] showing on top. *)
+(** [show_deck_pile deck num] prints on the screen the [deck] facing down with the 
+   total number of cards [num] showing on top. *)
 val show_deck_pile : deck -> int -> unit

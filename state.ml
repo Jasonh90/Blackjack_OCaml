@@ -17,6 +17,7 @@ type player = {
   name: string;
   hand: deck;
   status: player_status;
+  dollars: int;
 }
 
 (** The abstract type of values representing the game state. *)
@@ -27,8 +28,8 @@ type t = {
 }
 
 (** [make_player str hand] makes a new player with name [str] and starting hand [hand] *)
-let make_player str hand status: player = 
-  { name = str; hand = hand ; status = status}
+let make_player str hand status dollars : player = 
+  { name = str; hand = hand; status = status; dollars = dollars}
 
 
 (** [init_state player_name] creates the initial state of the game. A new deck is
