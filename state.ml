@@ -106,7 +106,6 @@ let hit state =
 let show_deck (state : t) = show_deck_pile state.card_deck (size state.card_deck)
 
 let print_hands (state : t) : unit = 
-
   print_deck_hide_first (get_hand2 state "Dealer") "Dealer";
   show_deck state;
   print_deck (get_hand state) (get_current_player_name state)

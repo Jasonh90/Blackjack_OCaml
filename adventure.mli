@@ -40,4 +40,6 @@ val print_last_card : deck -> unit
    hidden on screen with the corresponding name [string]. *)
 val print_deck_hide_first : deck -> string -> unit
 
+(** [show_deck_pile deck i] prints on the screen the [deck] facing down with the 
+   total number of cards [i] showing on top. *)
 val show_deck_pile : deck -> int -> unit

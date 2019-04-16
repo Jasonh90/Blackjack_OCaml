@@ -5,3 +5,4 @@
 #load "command.cmo";;
 #load "state.cmo";;
 #require "qcheck";;
+#require "unix"
