@@ -1,6 +1,7 @@
 open Game
 open Command
 open State
+open Ai
 
 let print state = ANSITerminal.erase Above; print_hands state
 let printw state = ANSITerminal.erase Above; print_winner state
@@ -10,8 +11,9 @@ let rec play (state: State.t) =
   | Winner x -> printw state;ANSITerminal.(print_string [blue;Bold] ("\n\nWinner(s): ")); 
     (List.map (fun y -> print_string (y^" ")) x); (print_string"\n\n"); exit 0;
   | End -> ANSITerminal.(print_string [red;Bold] ("\n\n All players busted \n")); exit 0;
-  | Playing -> let current = State.get_current_player_name state in 
-    if current = "Dealer" then play (check state)
+  | Playing -> 
+    let current = State.get_current_player_name state in 
+    if current = "Dealer" then play (dealer state)
     else print state;
     ANSITerminal.(print_string [red] ("It's " ^ current ^ " turn:"));
     print_string (" Would you like to hit or check? \n> ");

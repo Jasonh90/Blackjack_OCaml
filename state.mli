@@ -25,11 +25,11 @@ type player
     to the 'dealer'. The first turn goes to player.*)
 val init_state : string -> t
 
-(** [get_hand state] gets the hand of current player *)
-val get_hand : t -> Game.deck
+(** [get_hand_of_current state] gets the hand of current player *)
+val get_hand_of_current : t -> Game.deck
 
-(** [get_hand state] gets the hand of [name] *)
-val get_hand2 : t -> string -> Game.deck
+(** [get_hand_of_name state] gets the hand of [name] *)
+val get_hand_of_name : t -> string -> Game.deck
 
 (** [get_current_player_name state] gets name of current player*)
 val get_current_player_name : t -> string

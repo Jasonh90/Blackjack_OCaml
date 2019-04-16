@@ -1,8 +1,8 @@
-module type AdventureSig = sig
+module type GameSig = sig
 
 end
 
-module AdventureCheck : AdventureSig = Adventure
+module GameCheck : GameSig = Game
 
 module type CommandSig = sig
 

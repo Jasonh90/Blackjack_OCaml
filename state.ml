@@ -50,8 +50,8 @@ let init_state player_name =
   }
 
 
-(** [get_hand state] gets the hand of current player *)
-let get_hand state = 
+(** [get_hand_of_current state] gets the hand of current player *)
+let get_hand_of_current state = 
   let current_player = state.current_player_name in
   let rec match_player players = (* find current player and return player's hand *)
     match players with 
@@ -59,8 +59,8 @@ let get_hand state =
     | _ -> failwith "No such player" 
   in match_player state.players
 
-(** [get_hand state] gets the hand of [name]. *)
-let get_hand2 state name = 
+(** [get_hand_of_name state] gets the hand of [name]. *)
+let get_hand_of_name state name = 
   let rec match_player players = 
     match players with 
     | h::t -> if h.name = name then h.hand else match_player t
@@ -107,13 +107,13 @@ let show_deck (state : t) = show_deck_pile state.card_deck (size state.card_deck
 
 let print_hands (state : t) : unit = 
 
-  print_deck_hide_first (get_hand2 state "Dealer") "Dealer";
+  print_deck_hide_first (get_hand_of_name state "Dealer") "Dealer";
   show_deck state;
-  print_deck (get_hand state) (get_current_player_name state)
+  print_deck (get_hand_of_current state) (get_current_player_name state)
 
 let print_winner state = 
   let rec print = function
-    | h::t -> print_deck (get_hand2 state h.name) (h.name); print t
+    | h::t -> print_deck (get_hand_of_name state h.name) (h.name); print t
     | [] -> ()
   in print (List.rev state.players)
 
