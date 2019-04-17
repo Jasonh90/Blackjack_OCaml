@@ -6,4 +6,4 @@ open Game
 let dealer state = 
   let hand = get_hand_of_current state in
   let score = calculate_score hand in
-  if score < 17 then hit state else check state
+  if score <= 17 then hit state else check state

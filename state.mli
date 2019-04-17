@@ -9,7 +9,7 @@ type t
 type game_status = 
   | Winner of string list
   | Playing
-  | End (** All players busted *)
+  | Draw of string list
 
 (** The type [status] represents status of player*)
 type player_status = 
