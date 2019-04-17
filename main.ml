@@ -13,8 +13,10 @@ let rec play (state: State.t) =
     printw state;ANSITerminal.(print_string [blue;Bold] ("\n\nWinner(s): ")); 
     ignore(List.map (fun y -> print_string (y^" ")) x); 
     (print_string"\n\n"); exit 0;
-  | End -> 
-    ANSITerminal.(print_string [red;Bold] ("\n\n All players busted \n")); exit 0;
+  | Draw x -> 
+    printw state;ANSITerminal.(print_string [blue;Bold] ("\n\nPlayer(s) that drawed with dealer: ")); 
+    ignore(List.map (fun y -> print_string (y^" ")) x); 
+    (print_string"\n\n"); exit 0;
   | Playing -> 
     let current = State.get_current_player_name state in 
     if current = "Dealer" then play (dealer state)

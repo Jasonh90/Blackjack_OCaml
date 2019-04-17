@@ -23,6 +23,9 @@ val deal : deck -> deck -> int -> deck*deck
 
 val calculate_score : deck -> int
 
+(** [has_blackjack hand] returns boolean to indicate that the hand is blackjack *)
+val has_blackjack : deck -> bool
+
 val size : deck -> int
 
 val shuffle : deck -> deck
@@ -41,5 +44,5 @@ val print_last_card : deck -> unit
 val print_deck_hide_first : deck -> string -> unit
 
 (** [show_deck_pile deck num] prints on the screen the [deck] facing down with the 
-   total number of cards [num] showing on top. *)
+    total number of cards [num] showing on top. *)
 val show_deck_pile : deck -> int -> unit

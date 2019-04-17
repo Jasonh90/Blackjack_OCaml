@@ -33,11 +33,28 @@ let rec deal deck hand num =
     | h::t -> deal t (h::hand) (num-1)
 
 let calculate_score hand = 
-  let rec total deck acc = 
+  let rec total deck acc aces = 
     match deck with
-    |[] -> acc
-    |h :: t -> if h.number > 9 then total t (acc + 10) else total t (acc + h.number) in
-  total hand 0
+    | [] -> 
+      if aces = 0 then acc (* hand doens't have aces *)
+      else (* If hand has aces, compute highest score possible *)
+        let rec optimize_score acc one eleven best = 
+          match one with 
+          | -1 -> if best = -1 then acc+aces else best (* tried all combinations *)
+          | _ -> let score = acc + one + (eleven*11) in 
+            if score > best && score <= 21 
+            then optimize_score acc (one-1) (eleven+1) score
+            else optimize_score acc (one-1) (eleven+1) best
+        in optimize_score acc aces 0 (-1)
+    (* | [h; t] ->  *)
+    | h :: t -> if h.number > 9 then total t (acc + 10) aces (* face cards *)
+      else if h.number = 1 then total t acc (aces+1) (* ace card *)
+      else total t (acc + h.number) aces in (* number cards *)
+  total hand 0 0
+
+(** [has_blackjack hand] returns boolean to indicate that the hand is blackjack *)
+let has_blackjack hand = 
+  calculate_score hand = 21 && size hand = 2
 
 let suit_style = function
   | Spades -> "\xE2\x99\xA0"

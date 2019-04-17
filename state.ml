@@ -4,7 +4,7 @@ open Game
 type game_status = 
   | Winner of string list
   | Playing
-  | End (** All players busted *)
+  | Draw of string list
 
 (** The type [player_status] represents status of player*)
 type player_status = 
@@ -30,7 +30,6 @@ type t = {
 let make_player str hand status  : player = 
   { name = str; hand = hand; status = status}
 
-
 (** [init_state player_name] creates the initial state of the game. A new deck is
     created, two cards are handed to player with [player_name] and two cards are handed
     to the 'dealer'. The first turn goes to player.*)
@@ -49,14 +48,13 @@ let init_state player_name =
     card_deck = fst deal_to_dealer;
   }
 
-
 (** [get_hand_of_current state] gets the hand of current player *)
 let get_hand_of_current state = 
   let current_player = state.current_player_name in
   let rec match_player players = (* find current player and return player's hand *)
     match players with 
     | h::t -> if h.name = current_player then h.hand else match_player t
-    | _ -> failwith "No such player" 
+    | _ -> failwith "No such player (hand of current)" 
   in match_player state.players
 
 (** [get_hand_of_name state] gets the hand of [name]. *)
@@ -64,21 +62,30 @@ let get_hand_of_name state name =
   let rec match_player players = 
     match players with 
     | h::t -> if h.name = name then h.hand else match_player t
-    | _ -> failwith "No such player (hand2)" 
+    | _ -> failwith "No such player (hand of name)" 
   in match_player state.players
 
 (** [get_current_player_name state] gets name of current player*)
 let get_current_player_name state = 
   state.current_player_name
 
+(** [get_players_of_status player_lst status] returns list of player names that 
+    have player_status [status]*)
+let get_players_of_status player_lst status = 
+  let rec match_status lst status acc = 
+    match lst with 
+    | [] -> acc
+    | h::t -> if h.status = status then match_status t status (acc@[h.name]) 
+      else match_status t status acc in
+  match_status player_lst status []
+
 (** [next_player_name players current players_after_current] returns name of next player
     that is still in [Playing] status*)
-let next_player_name players current players_after_current = 
-  let rec next_turn lst = 
-    match lst with 
-    | h::t -> if h.status = Playing then h.name else next_turn t
-    | [] -> next_turn players in
-  next_turn players_after_current
+let next_player_name current players_after_current = 
+  let next_players = get_players_of_status players_after_current Playing in
+  match next_players with 
+  | h::t -> h
+  | [] -> ""
 
 (** [hit state] returns an updated state after dealing out a card to the player. If player is still
     [Playing] status after new card is dealt, don't rotate turn. If player is [Busted],  rotate turn
@@ -95,7 +102,7 @@ let hit state =
         {
           players = players;
           current_player_name = if new_status = Playing then current_player (* Playing -> don't change turns *)
-            else next_player_name state.players current_player t; (* Busted -> find next player *)
+            else next_player_name current_player t; (* Busted -> find next player *)
           card_deck = (fst deal_to_player);
         }
       )
@@ -106,7 +113,6 @@ let hit state =
 let show_deck (state : t) = show_deck_pile state.card_deck (size state.card_deck)
 
 let print_hands (state : t) : unit = 
-
   print_deck_hide_first (get_hand_of_name state "Dealer") "Dealer";
   show_deck state;
   print_deck (get_hand_of_current state) (get_current_player_name state)
@@ -128,7 +134,7 @@ let check state =
         (** updated state *)
         {
           players = players;
-          current_player_name = next_player_name state.players current_player t; (* find next player *)
+          current_player_name = next_player_name current_player t; (* find next player *)
           card_deck = state.card_deck;
         }
       )
@@ -137,29 +143,55 @@ let check state =
   in match_player state.players []
 
 (** [get_winner players winner score] computes the names of winners of the game and returns
-    Winner game_status*)
-let rec get_winner players winner score = 
+    [Winner] or [Draw] game status*)
+let rec get_winner players winner score blackjack: game_status = 
   match players with 
-  | [] -> Winner winner
-  | h::t -> let player_score = calculate_score h.hand in
-    if h.status = Playing || h.status = Checked then 
-      (if player_score > score then get_winner t (h.name::[]) player_score
-       else if player_score = score then get_winner t (h.name::winner) score
-       else get_winner t winner score)
-    else get_winner t winner score
+  | [] ->  
+    if List.exists (fun name -> name="Dealer") winner && List.length winner <> 1
+    then 
+      (* all players that drawed with dealer *)
+      Draw (List.filter (fun name -> name<>"Dealer") winner)
+    else Winner winner
+  | h::t -> if h.status = Busted then get_winner t winner score blackjack (* player busted *)
+    else ((* player not busted *)
+      if blackjack then (* Blackjack already exists *)
+        if has_blackjack h.hand then get_winner t (h.name::winner) score blackjack (* player has blackjack *)
+        else get_winner t winner score blackjack
+      else (* no blackjack yet *)
+        let player_score = calculate_score h.hand in
+        if has_blackjack h.hand then get_winner t (h.name::[]) player_score true (* player has blackjack *)
+        else
+          (if player_score > score then get_winner t (h.name::[]) player_score blackjack
+           else if player_score = score then get_winner t (h.name::winner) score blackjack
+           else get_winner t winner score blackjack)
+    )
+
+
+(** [get_state_of_dealer state] gets the status of dealer. *)
+let get_state_of_dealer state = 
+  let rec match_dealer players = (* find current player and return player's hand *)
+    match players with 
+    | h::t -> if h.name = "Dealer" then h.status else match_dealer t
+    | _ -> failwith "No such player (state of dealer)" 
+  in match_dealer state.players
 
 (** [check_game_status state] returns game_status according to all player's state. If at least 
-    one player is [Playing], return game_status [Playing]. If all players are [Busted], return [End].
-    If there are no [Playing] player_status and at least one [Checked], return [Winner] with string
-    list of player names that won.*)
+    one player is [Playing], return game_status [Playing]. Else, if dealer is [Busted] return [Winner]
+    with all players that are not busted. If dealer is not [Busted], return [Winner] if dealer lost or 
+    dealer is the only winner; return [Draw] if there are players that drawed with dealer *)
 let check_game_status state =
   let players = state.players in
-  let rec check_players players_lst all_players_busted : game_status = 
+  let rec check_players players_lst : game_status = 
     match players_lst with
-    | [] -> if all_players_busted then End else get_winner players [] 0
+    | [] -> (
+        match (get_state_of_dealer state) with
+        | Checked -> get_winner players [] 0 false
+        | Busted -> Winner (get_players_of_status players Checked) (* Dealer Busted - All players who didn't bust yet wins *)
+        | _ -> failwith ""
+      )
     | h::t when h.status=Playing -> Playing
-    | h::t when h.status=Busted -> check_players t (true && all_players_busted)
-    | h::t when h.status=Checked -> check_players t false
+    | h::t when h.status=Busted -> check_players t
+    | h::t when h.status=Checked -> check_players t
     | _ -> failwith "no match"
-  in check_players players false
+  in check_players players
 
