@@ -28,20 +28,40 @@ val init_state : string -> t
 (** [get_hand_of_current state] gets the hand of current player *)
 val get_hand_of_current : t -> Game.deck
 
-(** [get_hand_of_name state] gets the hand of [name] *)
-val get_hand_of_name : t -> string -> Game.deck
+(** [get_player_by_name state] is the player whose name is [name]. *)
+val get_player_by_name : t -> string -> player
 
 (** [get_current_player_name state] gets name of current player*)
 val get_current_player_name : t -> string
+
+(** [get_hand_of_current state] gets the hand of current player *)
+val get_hand_of_current : t -> Game.deck
+
+(** [get_hand_of_name state] gets the hand of [name] *)
+val get_player_hand : t -> string -> Game.deck
+
+val get_player_bet : t -> player -> int -> int
+
+val get_current_player_wallet : t -> int
+
+val get_player_wallet_by_name : t -> player -> int
 
 (** [hit state] returns an updated state after dealing out a card to the player. If player is still
     [Playing] status after new card is dealt, don't rotate turn. If player is [Busted],  rotate turn
     to point to next player*)
 val hit : t -> t 
 
-val print_hands : t -> unit
+val bet : t -> int -> t
 
 val print_winner : t -> unit
+
+val print_current_player_hand : t -> unit
+
+val show_deck : t -> unit
+
+val print_dealer_hand : t -> bool -> unit
+
+val print_dealer_hidden : t -> unit
 
 (** [check state] returns an updates state with new player status. Also rotates turn
     to point to next player*)

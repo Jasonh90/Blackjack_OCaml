@@ -7,6 +7,7 @@
 type command = 
   | Hit
   | Check
+  | Bet of int
   | Quit
 
 (** Raised when a malformed command is encountered. *)

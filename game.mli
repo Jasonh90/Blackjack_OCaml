@@ -25,8 +25,6 @@ val calculate_score : deck -> int
 
 val size : deck -> int
 
-val shuffle : deck -> deck
-
 (** [print_deck deck] is the [deck] shown side by side on screen. *)
 val print_deck : deck -> string -> unit
 

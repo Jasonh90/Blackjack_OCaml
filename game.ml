@@ -39,12 +39,13 @@ let calculate_score hand =
     |h :: t -> if h.number > 9 then total t (acc + 10) else total t (acc + h.number) in
   total hand 0
 
+let poker_chip = "\xE2\x9B\x80"
+
 let suit_style = function
   | Spades -> "\xE2\x99\xA0"
   | Clubs -> "\xE2\x99\xA3"
   | Hearts -> "\xE2\x99\xA5"
   | Diamonds -> "\xE2\x99\xA6"
-  | _ -> failwith "Wrong suit"
 
 let print_card1 (card : card) : unit = 
   let suit = suit_style card.suit in 
@@ -188,7 +189,6 @@ let print_card (card : card) (i : int) : unit =
 
 (** [print_deck deck] is the [deck] shown side by side on screen. *)
 let print_deck (deck : deck) (name : string): unit = 
-  ANSITerminal.(print_string [cyan] (name^"'s hand:\n"));next_line();
   (* for i=1 to 13 do
      let deck = add_cards i [] (i-1) in *)
   for i = 0 to 6 do 
@@ -215,7 +215,6 @@ let rec print_last_card (deck:deck) : unit =
 
 (** [print_deck_hide_first deck] is the [deck] with the first card hidden on screen . *)
 let print_deck_hide_first (deck : deck) (name:string): unit = 
-  ANSITerminal.(print_string [magenta] (name^"'s hand:\n\n"));
   for i = 0 to 6 do 
     hide_card i; space_inbtwn ();
     for k = 1 to (List.length deck) - 1 do
