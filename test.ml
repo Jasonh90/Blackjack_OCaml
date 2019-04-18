@@ -28,7 +28,7 @@ let commandTests =
     make_test "Command 4" "bet 4" (Bet 4) parse;
     make_error_test "Command error 1" "Bet nothing" Malformed parse;
     make_error_test "Command error 2" "" Malformed parse;
-    make_error_test "Command error 1" "Error" Malformed parse;
+    make_error_test "Command error 3" "Error" Malformed parse;
   ]
 let suite = "test suites" >::: List.flatten [
     commandTests;
