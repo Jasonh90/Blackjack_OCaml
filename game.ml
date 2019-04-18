@@ -1,13 +1,19 @@
+(** The abstract type of values representing card suits. *)
 type suit = Clubs | Diamonds | Hearts | Spades
 
+(** The abstract type of values representing a single card, includes an integer 
+    value and a suit of type suit *)
 type card = {
   number: int;
   suit: suit;
 }
+(** The abstract type of values representing a deck of cards is a list of type card *)
 type deck = card list
 
 exception EmptyDeck
 
+(** [add_cards x lst a] is a list where cards (a+1) through x of each suit are 
+    appended to [lst] *)
 let rec add_cards x lst a =
   if x = a then lst else
     let club = {number = x; suit = Clubs} :: lst 
@@ -20,18 +26,26 @@ let rec add_cards x lst a =
 let shuffle lst =
   QCheck.Gen.(generate1 (shuffle_l lst))
 
+(** [make_deck ] creates a full deck of cards including 1-13 of each suit and 
+    shuffles it *)
 let make_deck = shuffle (add_cards 13 [] 0)
 
+(** [shuffle lst] is a deck with zero cards represented by the empty list *)
 let empty_deck = []
 
+(** [size deck] is the length [deck]. *)
 let size (deck : deck) = List.length deck 
 
+(** [deak deck hand num] is a tuple containing [deck] with the first [num] cards
+    removed and [hand] with the first [num] cards of [deck] appended*)
 let rec deal deck hand num = 
   if num = 0 then (deck, hand) 
   else match deck with 
     | [] ->  raise EmptyDeck
     | h::t -> deal t (h::hand) (num-1)
 
+(** [calculate_score hand] is the total value of the cards in hand counting cards 
+    10-13 to be worth 10 points and aces to be worth either 1 or 11 points*)
 let calculate_score hand = 
   let rec total deck acc aces = 
     match deck with
@@ -52,7 +66,8 @@ let calculate_score hand =
       else total t (acc + h.number) aces in (* number cards *)
   total hand 0 0
 
-(** [has_blackjack hand] returns boolean to indicate that the hand is blackjack *)
+(** [has_blackjack hand] is true if [hand] has a total score of 21 and false
+    otherwise*)
 let has_blackjack hand = 
   calculate_score hand = 21 && size hand = 2
 

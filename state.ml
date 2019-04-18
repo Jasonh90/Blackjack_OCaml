@@ -1,12 +1,16 @@
 open Game
 
-(** The type [game_status] represents status of game*)
+(** The type [game_status] represents status of game. 
+    It is playing if the game is still in progress, winner if a winner has been 
+    determind and draw if multiple players have tied *)
 type game_status = 
   | Winner of string list
   | Playing
   | Draw of string list
 
-(** The type [player_status] represents status of player*)
+(** The type [player_status] represents status of player. If the player's score 
+    is over 21, it is busted, if the round is still in progress it is playing, and 
+    if the player has completely their turn without busting it is checked*)
 type player_status = 
   | Playing
   | Checked
@@ -21,14 +25,15 @@ type player = {
   bet: int;
 }
 
-(** The abstract type of values representing the game state. *)
+(** The abstract type of values representing the current game state. *)
 type t = {
   players: player list;
   current_player_name: string;
   card_deck: deck;
 }
 
-(** [make_player str hand] makes a new player with name [str] and starting hand [hand] *)
+(** [make_player str hand] makes a new player with name [str], starting hand 
+    [hand], a wallet balance of [dollars], and a bet [bet_val] *)
 let make_player str hand status dollars bet_val : player = 
   { name = str; hand = hand; status = status; wallet = dollars; bet = bet_val}
 
@@ -77,7 +82,7 @@ let get_current_player_wallet (state : t) : int =
 
 let get_player_wallet_by_name (state : t) (player : player) : int = 
   (get_player_by_name state player.name).wallet
-  
+
 (** [get_players_of_status player_lst status] returns list of player names that 
     have player_status [status]*)
 let get_players_of_status player_lst status = 
@@ -133,7 +138,7 @@ let print_dealer_hand (state : t) (w : bool): unit =
   print_player_wallet state "Dealer";
   ANSITerminal.(print_string [cyan] ("Dealer's hand:\n")); 
   if w then print_deck (get_player_hand state "Dealer") "Dealer" else
-  print_deck_hide_first (get_player_hand state "Dealer") "Dealer"
+    print_deck_hide_first (get_player_hand state "Dealer") "Dealer"
 
 let print_current_player_hand state = 
   print_player_wallet state (get_current_player_name state); 
@@ -151,8 +156,8 @@ let print_dealer_hidden (state : t) : unit =
   print_current_player_hand state
 
 let print_players_cept_dealer state = function
-   | h::t when h.name <> "Dealer" -> print_player_hand state h;
-   | _ -> ()
+  | h::t when h.name <> "Dealer" -> print_player_hand state h;
+  | _ -> ()
 
 let print_winner (state : t) = 
   print_dealer_hand state true;
@@ -235,7 +240,7 @@ let check_game_status state =
     | _ -> failwith "no match"
   in check_players players
 
-
+(** [bet state] is an updated state with the current players bet updated to be bet_val*)
 let bet (state : t) (bet_val : int) : t = 
   let current_player = get_current_player_name state in
   let rec match_player players acc = (* find current player and deal out a new card *)
