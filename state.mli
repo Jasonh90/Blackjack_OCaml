@@ -5,13 +5,20 @@
 (** The abstract type of values representing the game state. *)
 type t
 
-(** The type [game_status] represents status of current round*)
+(** The type [game_status] represents status of game. 
+    It is [Playing] if the game is still in progress; [Winner] if either (1)
+    dealer is the only player that won OR (2) non-dealer player(s) won; [Draw]
+    if multiple players won where one of the winners is the dealer. [Winner] and
+    [Draw] commands have a string list associated which contains the names of 
+    winners *)
 type game_status = 
   | Winner of string list
   | Playing
   | Draw of string list
 
-(** The type [status] represents status of player's hand*)
+(** The type [player_status] represents status of player. If the player's score 
+    is over 21, it is [busted], if the round is still in progress it is [playing]
+    , and if the player has completely their turn without busting it is [checked]*)
 type player_status = 
   | Playing
   | Checked
@@ -25,29 +32,17 @@ type player
     to the 'dealer'. The first turn goes to player.*)
 val init_state : string -> t
 
-(** [get_hand_of_current state] is the hand of current player in [state] *)
-val get_hand_of_current : t -> Game.deck
-
-(** [get_player_by_name state] is the player whose name is [name]. *)
-val get_player_by_name : t -> string -> player
-
 (** [get_current_player_name state] is the name of the current player in [state]*)
 val get_current_player_name : t -> string
-
-(** [get_hand_of_current state] is the hand of current player in [state] *)
-val get_hand_of_current : t -> Game.deck
 
 (** [get_hand_of_name state] is the hand of [name] *)
 val get_player_hand : t -> string -> Game.deck
 
 (** [get_player_bet state] is the bet of [name] *)
-val get_player_bet : t -> player -> int -> int
-
-(** [get_current_player_wallet state] is the wallet of the current player in [state] *)
-val get_current_player_wallet : t -> int
+val get_player_bet : t -> string -> int -> int
 
 (** [get_player_wallet_by_name] is the wallet of [name] *)
-val get_player_wallet_by_name : t -> player -> int
+val get_player_wallet : t -> string -> int
 
 (** [hit state] is an updated state after dealing out a card to the current player.   
     If player is still[Playing] status after new card is dealt, don't rotate turn. 

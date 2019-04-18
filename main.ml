@@ -17,19 +17,19 @@ let print_name name =
 let print state (w:bool)= 
   clear_above ();
   if w then print_winner state else print_dealer_hidden state
-  
+
 let rec play (state: State.t) (prev_invalid : bool)= 
   match check_game_status state with
-  | Winner x -> 
+  | Winner x -> (** either (1) dealer is the only person that won OR (2) non-dealer player(s) won *)
     print state true; 
     ANSITerminal.(print_string [blue;Bold] ("\n\nWinner(s): ")); 
     ignore(List.map (fun y -> print_string (y^" ")) x); 
     (print_string"\n\n"); exit 0;
-  | Draw x -> 
+  | Draw x -> (** multiple players won, where one of the winners is dealer *)
     print state true;ANSITerminal.(print_string [blue;Bold] ("\n\nPlayer(s) that drawed with dealer: ")); 
     ignore(List.map (fun y -> print_string (y^" ")) x); 
     (print_string"\n\n"); exit 0;
-  | Playing -> 
+  | Playing -> (** at least 1 player is still [Playing] status *)
     let current = State.get_current_player_name state in 
     if current = "Dealer" then play (dealer state) false
     else ( 
@@ -48,7 +48,8 @@ let rec play (state: State.t) (prev_invalid : bool)=
 (** [before_round state] is the betting stage before the round begins. 
     Requires: [state] is initialized (init_state). *)
 let rec before_round (state : State.t) prev_invalid =
-  let current_player_wallet = get_current_player_wallet state in
+  let current = get_current_player_name state in
+  let current_player_wallet = get_player_wallet state current in
 
   ANSITerminal.(erase Above; 
                 if prev_invalid then (print_invalid (); print_bet_helper "Hint: bet <val>") else ();
@@ -62,7 +63,7 @@ let rec before_round (state : State.t) prev_invalid =
   | exception Malformed -> before_round state true
   | _ -> before_round state true
 
-(** [play_game f] . *)
+(** [play_game name] starts a new game of blackjack with player name [name]. *)
 let play_game name =
   let game = init_state name in before_round game false
 

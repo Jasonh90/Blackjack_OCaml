@@ -1,7 +1,5 @@
 (** 
-   Representation of game functions.
-
-   DESCRIPTION OF THIS MODULE.
+   Collection of game functions.
 *)
 
 (** The abstract type of values representing card suits. *)
@@ -13,6 +11,7 @@ type card
 (** The abstract type of values representing a deck of cards. *)
 type deck
 
+(** Raised when function is trying to perform action on an empty deck. *)
 exception EmptyDeck
 
 (** [make_deck] is a full shuffled deck of cards *)
@@ -24,14 +23,15 @@ val empty_deck : deck
 (** [shuffle lst] is a random permutation of the deck [lst]. *)
 val shuffle : deck -> deck
 
-(** [deak deck hand num] is a tuple containing the remaining deck and the 
+(** [deal deck hand num] is a tuple containing the remaining deck and the 
     resulting hand from dealing [num] cards into [hand]*)
 val deal : deck -> deck -> int -> deck*deck
 
-(** [calculate_score hand] is the total of the cards in [hand]*)
+(** [calculate_score hand] is the total value of the cards in [hand] counting cards 
+    10-13 to be worth 10 points and aces to be worth either 1 or 11 points. *)
 val calculate_score : deck -> int
 
-(** [has_blackjack hand] returns boolean to indicate that the hand is blackjack *)
+(** [has_blackjack hand] is true if [hand] has a blackjack (face card & ace) *)
 val has_blackjack : deck -> bool
 
 (** [size deck] is the number of cards in [deck]. *)

@@ -1,16 +1,19 @@
 open Game
 
 (** The type [game_status] represents status of game. 
-    It is playing if the game is still in progress, winner if a winner has been 
-    determind and draw if multiple players have tied *)
+    It is [Playing] if the game is still in progress; [Winner] if either (1)
+    dealer is the only player that won OR (2) non-dealer player(s) won; [Draw]
+    if multiple players won where one of the winners is the dealer. [Winner] and
+    [Draw] commands have a string list associated which contains the names of 
+    winners *)
 type game_status = 
   | Winner of string list
   | Playing
   | Draw of string list
 
 (** The type [player_status] represents status of player. If the player's score 
-    is over 21, it is busted, if the round is still in progress it is playing, and 
-    if the player has completely their turn without busting it is checked*)
+    is over 21, it is [busted], if the round is still in progress it is [playing]
+    , and if the player has completely their turn without busting it is [checked]*)
 type player_status = 
   | Playing
   | Checked
@@ -67,21 +70,14 @@ let get_player_by_name (state : t) (name : string) : player =
 let get_current_player_name (state : t) : string = 
   state.current_player_name
 
-(** [get_hand_of_current state] gets the hand of current player *)
-let get_hand_of_current (state : t) : deck = 
-  (get_player_by_name state (get_current_player_name state)).hand
-
 let get_player_hand (state : t) (name : string) : deck = 
   (get_player_by_name state name).hand
 
-let get_player_bet (state : t) (player : player) (bet : int) : int = 
-  (get_player_by_name state player.name).bet
+let get_player_bet (state : t) (name : string) (bet : int) : int = 
+  (get_player_by_name state name).bet
 
-let get_current_player_wallet (state : t) : int = 
-  (get_player_by_name state (get_current_player_name state)).wallet
-
-let get_player_wallet_by_name (state : t) (player : player) : int = 
-  (get_player_by_name state player.name).wallet
+let get_player_wallet (state : t) (name : string) : int = 
+  (get_player_by_name state name).wallet
 
 (** [get_players_of_status player_lst status] returns list of player names that 
     have player_status [status]*)
@@ -129,7 +125,7 @@ let next_line () = ANSITerminal.(print_string [Reset] "\n")
 let print_player_wallet state name = 
   ANSITerminal.(print_string [magenta]
                   (name ^ "\'s current balance: $" ^ 
-                   string_of_int (get_player_wallet_by_name state (get_player_by_name state name)) ^ ".\n"))
+                   string_of_int (get_player_wallet state name) ^ ".\n"))
 
 let show_deck (state : t) = 
   show_deck_pile state.card_deck (size state.card_deck)
@@ -141,9 +137,10 @@ let print_dealer_hand (state : t) (w : bool): unit =
     print_deck_hide_first (get_player_hand state "Dealer") "Dealer"
 
 let print_current_player_hand state = 
-  print_player_wallet state (get_current_player_name state); 
-  ANSITerminal.(print_string [cyan] (get_current_player_name state^"'s hand:\n"));
-  print_deck (get_hand_of_current state) (get_current_player_name state)
+  let current = state.current_player_name in
+  print_player_wallet state (current); 
+  ANSITerminal.(print_string [cyan] (current^"'s hand:\n"));
+  print_deck (get_player_hand state current) (current)
 
 let print_player_hand state player = 
   print_player_wallet state player.name; 
