@@ -29,21 +29,22 @@ let rec play (state: State.t) (prev_invalid : bool)=
     print state true;ANSITerminal.(print_string [blue;Bold] ("\n\nPlayer(s) that drawed with dealer: ")); 
     ignore(List.map (fun y -> print_string (y^" ")) x); 
     (print_string"\n\n"); exit 0;
-  | Playing -> (** at least 1 player is still [Playing] status *)
+  | InProgress -> (** at least 1 player is still [Playing] status *)
     let current = State.get_current_player_name state in 
-    if current = "Dealer" then play (dealer state) false
-    else ( 
-      print state false;
-      if prev_invalid then print_invalid () else ();
-      ANSITerminal.(print_string [red] ("\nIt's " ^ current ^ " turn. "));
-      print_string ("Would you like to hit or check? \n> ");
-      match parse (read_line ()) with 
-      | Hit -> play (hit state) false
-      | Check -> play (check state) false
-      | Quit -> print_quit ()
-      | Bet _ -> play state true
-      | exception Malformed -> play state true
-    )
+    let command = 
+      if current = "Dealer" then dealer (get_players_list state) (get_player_hand state current) 
+      else ( 
+        print state false;
+        if prev_invalid then print_invalid () else ();
+        ANSITerminal.(print_string [red] ("\nIt's " ^ current ^ " turn. "));
+        print_string ("Would you like to hit or check? \n> ");
+        parse (read_line ()) ) in
+    match command with
+    | Hit -> play (hit state) false
+    | Check -> play (check state) false
+    | Quit -> print_quit ()
+    | Bet _ -> play state true
+    | exception Malformed -> play state true
 
 (** [before_round state] is the betting stage before the round begins. 
     Requires: [state] is initialized (init_state). *)
