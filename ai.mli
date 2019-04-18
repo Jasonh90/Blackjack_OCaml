@@ -1,8 +1,13 @@
+open Command
+open Game
+open State
+
 (** 
    Contains functions that contribute to configuring the algorithms for
    dealer and AI player.
 *)
 
-(** [dealer state] determines the moves for dealer. When dealer has cards 
-    totaling to 16 or less, dealer calls hit. If not, dealer calls check. *)
-val dealer : State.t -> State.t
+(** [dealer player_lst hand] determines the moves for dealer. If all players are [Busted] 
+    dealer calls check. Otherwise, when dealer has cards totaling to 16 or less, 
+    dealer calls hit. If not, dealer calls check. *)
+val dealer : player list -> deck -> command

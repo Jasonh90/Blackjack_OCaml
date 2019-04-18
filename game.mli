@@ -3,7 +3,7 @@
 *)
 
 (** The abstract type of values representing card suits. *)
-type suit
+type suit = Clubs | Diamonds | Hearts | Spades
 
 (** The abstract type of values representing a single card. *)
 type card
@@ -14,14 +14,21 @@ type deck
 (** Raised when function is trying to perform action on an empty deck. *)
 exception EmptyDeck
 
+(** [deck_test num suit deck] add a card with number [num] and suit [suit] 
+     to [deck]. This function is solely for testing. *)
+val deck_test : int -> suit -> deck -> deck
+
+(** [shuffle lst] is a random permutation of the deck [lst]. *)
+val shuffle : deck -> deck
+
 (** [make_deck] is a full shuffled deck of cards *)
 val make_deck : deck
 
 (** [empty_deck] is a deck containing 0 cards *)
 val empty_deck : deck
 
-(** [shuffle lst] is a random permutation of the deck [lst]. *)
-val shuffle : deck -> deck
+(** [size deck] is the number of cards in [deck]. *)
+val size : deck -> int
 
 (** [deal deck hand num] is a tuple containing the remaining deck and the 
     resulting hand from dealing [num] cards into [hand]*)
@@ -34,8 +41,12 @@ val calculate_score : deck -> int
 (** [has_blackjack hand] is true if [hand] has a blackjack (face card & ace) *)
 val has_blackjack : deck -> bool
 
-(** [size deck] is the number of cards in [deck]. *)
-val size : deck -> int
+
+
+
+
+
+(****************************** DISPLAY CARDS ********************************)
 
 (** [print_deck deck] is the [deck] shown side by side on screen. *)
 val print_deck : deck -> string -> unit

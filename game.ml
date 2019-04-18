@@ -14,6 +14,11 @@ type deck = card list
 (** Raised when function is trying to perform action on an empty deck. *)
 exception EmptyDeck
 
+(** [deck_test num suit deck] add a card with number [num] and suit [suit] 
+     to [deck]. This function is solely for testing. *)
+let deck_test num suit deck =
+  deck@[{number=num; suit=suit}]
+
 (** [add_cards x lst a] is a list where cards (a+1) through x of each suit are 
     appended to [lst] *)
 let rec add_cards x lst a =
@@ -71,6 +76,14 @@ let calculate_score hand =
 (** [has_blackjack hand] is true if [hand] has a blackjack (face card & ace) *)
 let has_blackjack hand = 
   calculate_score hand = 21 && size hand = 2
+
+
+
+
+
+
+
+(****************************** DISPLAY CARDS ********************************)
 
 let poker_chip = "\xE2\x9B\x80"
 
@@ -270,6 +283,8 @@ let deck_pile (i : int) (num : int) : unit =
   | 5 -> two_suit_bot ()
   | _ -> failwith "i is not in between 0..5"
 
+(** [show_deck_pile deck num] prints on the screen the [deck] facing down with the 
+    total number of cards [num] showing on top. *)
 let show_deck_pile deck num = 
   ANSITerminal.(print_string [blue] ("\n\t Deck:\n"));
   for i = 0 to 6 do 
