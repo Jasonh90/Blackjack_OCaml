@@ -3,7 +3,7 @@ open Game
 open Command
 
 (** [dealer player_lst hand] determines the moves for dealer. If all players are [Busted] 
-    dealer calls check. Otherwise, when dealer has cards otaling to 16 or less, 
+    dealer calls check. Otherwise, when dealer has cards totaling to 16 or less, 
     dealer calls hit. If not, dealer calls check. *)
 let dealer player_lst hand = 
   if get_players_of_status player_lst Checked = [] then Check 

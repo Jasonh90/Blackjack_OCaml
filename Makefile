@@ -1,4 +1,4 @@
-MODULES=game command state main authors
+MODULES=game command state main authors ai
 OBJECTS=$(MODULES:=.cmo)
 MLS=$(MODULES:=.ml)
 MLIS=$(MODULES:=.mli)
@@ -26,7 +26,7 @@ finalcheck: check
 	bash finalcheck.sh
 
 zip:
-	zip adv.zip *.ml* *.json _tags Makefile
+	zip blackjack.zip *.ml* *.json _tags Makefile
 
 docs: docs-public docs-private
 
