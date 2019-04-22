@@ -77,7 +77,8 @@ let calculate_score hand =
 let has_blackjack hand = 
   calculate_score hand = 21 && size hand = 2
 
-
+let get_number card = 
+  card.number
 
 
 
