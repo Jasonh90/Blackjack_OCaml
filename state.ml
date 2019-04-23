@@ -282,8 +282,8 @@ let update_state (state : t) : t =
       let updated_player = {player with hand = (snd deal_to_player); status = Playing} in
       (* let dealer = make_player "Dealer" (snd deal_to_dealer) Playing player.wallet 0 in *)
       update_players (acc@[updated_player]) new_deck players
-    | [] -> acc,deck
-  in let updated_players, updated_deck = update_players [] state.card_deck state.players in
+    | [] -> acc,deck in 
+  let updated_players, updated_deck = update_players [] state.card_deck state.players in
   {
     players = updated_players;
     current_player_name = (List.hd updated_players).name; 
