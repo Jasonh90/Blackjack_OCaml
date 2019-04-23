@@ -46,6 +46,10 @@ let empty = empty_deck
 let blackjack = deck_test 11 Diamonds (deck_test 1 Spades empty) (* deck : ace, face *)
 let deck_5 = deal make_deck blackjack empty_deck 3 (* deck : ace, face + 3 more unknown cards *)
 let deck_21 = deck_test 1 Spades (deck_test 1 Hearts (deck_test 8 Diamonds (deck_test 1 Clubs empty))) (* deck : ace, ace, ace, 8 *)
+let cards_in_play_shuffle = deal make_deck empty_deck empty_deck 50
+let first = fst cards_in_play_shuffle
+let second = snd cards_in_play_shuffle
+let deck_check_shuffle = deal first empty empty_deck 5
 
 let gameTests = 
   [
@@ -54,6 +58,8 @@ let gameTests =
     make_test "Full deck" make_deck 52 size;
     make_test "Deal - new hand" (snd deck_5) 5 size;
     make_test "Deal - new deck" (fst deck_5) 49 size;
+    make_test "Deal - shuffle1" (snd deck_check_shuffle) 5 size;
+    make_test "Deal - shuffle2" (fst deck_check_shuffle) 47 size;
     make_test "Score - blackjack" blackjack 21 calculate_score;
     make_test "Score - 21; no blackjack" deck_21 21 calculate_score;
     make_test "Score - 17" deck_lessThan18 17 calculate_score;

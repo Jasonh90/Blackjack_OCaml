@@ -19,6 +19,11 @@ exception EmptyDeck
 let deck_test num suit deck =
   deck@[{number=num; suit=suit}]
 
+let make_card num suit = 
+  {number=num;suit=suit}
+
+let is_in a b = List.mem a b
+
 (** [add_cards x lst a] is a list where cards (a+1) through x of each suit are 
     appended to [lst] *)
 let rec add_cards x lst a =
@@ -51,7 +56,7 @@ let size (deck : deck) = List.length deck
 let rec deal (deck : deck) (hand : deck) (cards_in_play : deck)= function
   | 0 -> (deck, hand) 
   | num -> match deck with 
-    | [] ->  let rec new_deck acc = function
+    | [] -> let rec new_deck acc = function
         | [] -> acc
         (* Don't include h when it's a mem of cards_in_play *)
         | h::t when List.mem h cards_in_play -> new_deck acc t
@@ -93,7 +98,7 @@ let rec combine_cards (deck1 : deck) (deck2 : deck) : deck =
     then combine_cards t deck2 
     else combine_cards t (h::deck2)
 
-    
+
 let get_number card = 
   card.number
 

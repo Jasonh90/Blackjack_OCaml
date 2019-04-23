@@ -5,31 +5,38 @@ open Ai
 
 let clear_above () = ANSITerminal.erase Above
 
-
 let next_line () = ANSITerminal.(print_string [Reset] "\n")
+
 let print_invalid () = ANSITerminal.(
     print_string [on_white;red] "Invalid command. Please try again. ")
-let print_bet_helper n = ANSITerminal.(
-    print_string [on_white;magenta] n)
-let print_quit () = clear_above(); ANSITerminal.( print_string [blue] ("\nGoodbye\n\n")); exit 0
-let print_name name =
-  ANSITerminal.(print_string [magenta;Bold] (name^"'s hand:\n\n"))
-let print state (w:bool)= 
-  clear_above ();
-  if w then print_winner state else print_dealer_hidden state
+
+let print_bet_helper n = ANSITerminal.(print_string [on_white;magenta] n)
+
+let print_quit () = clear_above (); ANSITerminal.(print_string [blue] ("\nGoodbye\n\n")); exit 0
+
+let print_name name = ANSITerminal.(print_string [magenta;Bold] (name^"'s hand:\n\n"))
+
+let print state (won : bool)= clear_above ();
+  if won then print_winner state else print_dealer_hidden state
+
+let print_round_end state f x str = 
+  let updated_state = pay_up state x in
+  print updated_state true;
+  ANSITerminal.(print_string [blue;Bold] ("\n\n" ^ str)); 
+  ignore(List.map (fun y -> print_string (y^" ")) x); 
+  (print_string"\n\n"); 
+  (* Write something to go to next around *)
+  print_string "Press [Enter] to move to next round"; 
+  ignore(read_line ()); 
+  (* Move onto next round *)
+  f updated_state x
 
 let rec play (state: State.t) (prev_invalid : bool) : unit = 
   match check_game_status state with
   | Winner x -> (** either (1) dealer is the only person that won OR (2) non-dealer player(s) won *)
-    print state true; 
-    ANSITerminal.(print_string [blue;Bold] ("\n\nWinner(s): ")); 
-    ignore(List.map (fun y -> print_string (y^" ")) x); 
-    (print_string"\n\n"); next_round state x;
+    print_round_end state next_round x "Winner(s): ";
   | Draw x -> (** multiple players won, where one of the winners is dealer *)
-    print state true;
-    ANSITerminal.(print_string [blue;Bold] ("\n\nPlayer(s) that drawed with dealer: ")); 
-    ignore(List.map (fun y -> print_string (y^" ")) x); 
-    (print_string"\n\n"); exit 0;
+    print_round_end state next_round x "Player(s) that drawed with dealer: ";
   | InProgress -> (** at least 1 player is still [Playing] status *)
     let current = State.get_current_player_name state in 
     let command = 
@@ -53,7 +60,7 @@ let rec play (state: State.t) (prev_invalid : bool) : unit =
     Requires: [winners] does not include the dealer. 
     Returns: a new state with each player having their correct money value. *)
 and next_round (state : State.t) (winners : string list) = 
-  before_round (update_state (pay_up state winners)) false
+  before_round (update_state state) false
 
 (** [before_round state prev_invalid] is the betting stage before the round begins. This gets 
     the current player's info and displays it. This will ask the current player 
@@ -62,19 +69,19 @@ and next_round (state : State.t) (winners : string list) =
 and before_round (state : State.t) (prev_invalid : bool) : unit =
   let current = get_current_player_name state in
   let current_player_wallet = get_player_wallet state current in
-
-  ANSITerminal.(erase Above; 
-                if prev_invalid then (print_invalid (); print_bet_helper "Hint: bet <val>") else ();
-                print_string [white;Bold] 
-                  ("\nYour current balance is: $" ^ 
-                   string_of_int(current_player_wallet) 
-                   ^ "\nHow much would like you like to bet?\n> "));
-  match parse (read_line ()) with 
-  | Bet b when b > 0 && b <= current_player_wallet -> play (bet state b) false
-  | Quit -> print_quit ()
-  | exception Malformed -> before_round state true
-  | _ -> before_round state true
-
+  if (current_player_wallet = 0) then print_string "\nYou lose! Your balance is $0!\n\n" else (
+    ANSITerminal.(erase Above; 
+                  if prev_invalid then (print_invalid (); print_bet_helper "Hint: bet <val>") else ();
+                  print_string [white;Bold] 
+                    ("\nYour current balance is: $" ^ 
+                     string_of_int(current_player_wallet) 
+                     ^ "\nHow much would like you like to bet?\n> "));
+    match parse (read_line ()) with 
+    | Bet b when b > 0 && b <= current_player_wallet -> play (bet state b) false
+    | Quit -> print_quit ()
+    | exception Malformed -> before_round state true
+    | _ -> before_round state true
+  )
 (** [play_game name] starts a new game of blackjack with player name [name]. *)
 let play_game name =
   let game = init_state name in before_round game false
@@ -95,10 +102,7 @@ let () = main ()
 
 
 (* NOTES TO SELF:
-1) change that hard coded part in state.ml with "jason"
-2) change interface to have the current bet and different output when won or lost
-3) sendingt that bool to AI.... hmm maybe part of deal in Game...?
-4) Malformed isn't being detected for some reason...?
-5) implement draw
-6) update documentation
-7)  *)
+   3) sendingt that bool to AI.... hmm maybe part of deal in Game...?
+   4) Malformed isn't being detected for some reason...?
+   6) update documentation
+*)

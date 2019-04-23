@@ -245,14 +245,18 @@ let rec pay_up (state : t) (winners : string list) : t =
     | [] -> acc, dealers_wallet
     (* When a player won -> they earn 2x their bet, dealer loses 1x bet *)
     | h::t when List.mem h.name winners && h.name <> "Dealer" -> 
-      update_players ({h with wallet = h.wallet + 2 * h.bet; bet = 0}::acc) 
+      (* If dealer is in the winners list, then the player [h] receives their original
+          bet, but if dealer is not in the list, then [h] gets twice their bet. (Their 
+          wallet is already subtracted of their bet to begin with.) *)
+      let updated_wallet = h.wallet + h.bet * (if List.mem "Dealer" winners then 1 else 2) in
+      update_players ({h with wallet = updated_wallet; bet = 0}::acc) 
         (dealers_wallet - h.bet) t
     (* When a player lost -> they lose their bet, dealer earns *)
     | h::t when h.name <> "Dealer" -> update_players ({h with bet = 0}::acc) (dealers_wallet + h.bet) t
     (* Skip Dealer, add onto acc *)
     | h::t -> update_players (h::acc) dealers_wallet t
   in 
-  let players, d_wallet = update_players [] (get_player_wallet state "Dealer") state.players in 
+  let players, d_wallet = update_players [] (get_player_wallet state "Dealer") (List.rev state.players) in 
   (* Pay the dealer with the updated dealer wallet from the previous function. *)
   let rec pay_dealer (state : t) acc = function
     (* There shouldn't be a case when state.players is [] *)
@@ -260,7 +264,7 @@ let rec pay_up (state : t) (winners : string list) : t =
     (* Return the new state with dealer's wallet updated *)
     | h::t when h.name = "Dealer" -> {state with players = (acc@{h with bet = 0; wallet = d_wallet}::t)}
     (* Not dealer yet, keep looping... *)
-    | h::t ->   pay_dealer state (h::acc) t 
+    | h::t -> pay_dealer state (acc@[h]) t 
   in pay_dealer state [] players
 
 (** [update_state s] is the updated state [s] where each player's hands are 
@@ -277,15 +281,33 @@ let update_state (state : t) : t =
       (* let deal_to_dealer = deal new_deck empty_deck (cards_in_play state) 2 in  *)
       let updated_player = {player with hand = (snd deal_to_player); status = Playing} in
       (* let dealer = make_player "Dealer" (snd deal_to_dealer) Playing player.wallet 0 in *)
-      update_players (updated_player::acc) new_deck players
+      update_players (acc@[updated_player]) new_deck players
     | [] -> acc,deck
-  in let updated_players, updated_deck = update_players [] state.card_deck state.players 
-  in {players = updated_players;current_player_name="jason"; card_deck = updated_deck}
+  in let updated_players, updated_deck = update_players [] state.card_deck state.players in
+  {
+    players = updated_players;
+    current_player_name = (List.hd updated_players).name; 
+    card_deck = updated_deck
+  }
+
+
+
+
+
 
 
 (* WHEN RESHUFFLING, TELL AI SOMEHOW THAT THE GAME RESHUFFLED THE DECK. *)
 
 (****************************** DISPLAY CARDS ********************************)
+
+let get_current_bet state = 
+  let rec current_bet acc = function 
+    | [] -> acc 
+    | h::t -> current_bet (acc + h.bet) t 
+  in current_bet 0 state.players
+
+let print_curr_bet v = 
+  ANSITerminal.(print_string [cyan;Bold] ("   Current bet: $" ^ string_of_int v))
 
 let next_line () = ANSITerminal.(print_string [Reset] "\n")
 
@@ -316,11 +338,14 @@ let print_player_hand state player =
 
 let print_dealer_hidden (state : t) : unit = 
   print_dealer_hand state false;
+  print_curr_bet (get_current_bet state);
   show_deck state;
   print_current_player_hand state
 
-let print_players_cept_dealer state = function
-  | h::t when h.name <> "Dealer" -> print_player_hand state h;
+let rec print_players_cept_dealer state = function
+  | h::t when h.name <> "Dealer" -> 
+    print_player_hand state h; print_players_cept_dealer state t
+  | h::t -> print_players_cept_dealer state t
   | _ -> ()
 
 let print_winner (state : t) = 

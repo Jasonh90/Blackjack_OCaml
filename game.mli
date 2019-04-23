@@ -18,6 +18,10 @@ exception EmptyDeck
      to [deck]. This function is solely for testing. *)
 val deck_test : int -> suit -> deck -> deck
 
+val make_card : int -> suit -> card
+
+val is_in : card -> deck -> bool
+
 (** [shuffle lst] is a random permutation of the deck [lst]. *)
 val shuffle : deck -> deck
 
