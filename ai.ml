@@ -16,7 +16,6 @@ type used_deck = {
   total_left: int;
 }
 
-
 (** [add_deck lst hand] is [lst] with the (num,1) appended if num was not already 
     in [lst] and (num,x+1) appended to replace the pair (num, x) if num was already 
     a member of [lst] where num is the number of each card in [hand]*)
@@ -50,7 +49,8 @@ let valid_cards hand =
     having the number [x] where [len] is the number of cards left in the deck and 
     [lst] gives information on the cards used already*)
 let calc_prob x used : float = 
-  let left:float = 4.0 -. (float(List.assoc x used.used_cards)) in 
+  let left = if List.mem_assoc x used.used_cards then 4.0 -. (float(List.assoc x used.used_cards))
+    else 4.0 in 
   left /. float(used.total_left)
 
 (** [calc_total_prob valid lst len sum] is a float containing the probability of the next card 
