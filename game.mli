@@ -41,6 +41,9 @@ val calculate_score : deck -> int
 (** [has_blackjack hand] is true if [hand] has a blackjack (face card & ace) *)
 val has_blackjack : deck -> bool
 
+(** [get_number card] is the number of [card] *)
+val get_number : card -> int
+
 
 
 

@@ -23,10 +23,10 @@ type used_deck = {
 let rec add_deck lst hand = 
   match hand with 
   |[] -> lst
-  | h :: t -> if not (List.mem_assoc h.get_number lst) then add_deck ((h.get_number,1) :: lst) t else
-      let current = List.assoc h.get_number lst in 
-      let new_lst = List.remove_assoc h.get_number lst in 
-      add_deck ((h.get_number, current + 1) :: new_lst) t
+  | h :: t -> if not (List.mem_assoc (get_number h) lst) then add_deck (((get_number h),1) :: lst) t else
+      let current = List.assoc (get_number h) lst in 
+      let new_lst = List.remove_assoc (get_number h) lst in 
+      add_deck (((get_number h), current + 1) :: new_lst) t
 
 (** [add_used_cards lst players] is [lst] with the numbers from the hand of each
     player in [players] appended*)
