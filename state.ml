@@ -69,6 +69,7 @@ let get_used_cards used = used.used_cards
 
 let get_total_left used = used.total_left
 
+let get_used state = state.used
 
 (** [cards_in_play s] is the current cards in play. *)
 let rec cards_in_play (state : t) : deck  = 
@@ -93,9 +94,10 @@ let init_state player_name =
   (* create players *)
   let player = make_player player_name (snd deal_to_player) Playing 500 0 in
   let dealer = make_player "Dealer" (snd deal_to_dealer) Playing 5000 0 in
+  let ai = make_player "AI" (snd deal_to_player) Playing 5000 0 in
   (* return initialized state *)
   {
-    players = [player; dealer];
+    players = [player; ai; dealer];
     current_player_name = player.name;
     card_deck = fst deal_to_dealer;
     used = restart ();

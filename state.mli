@@ -90,8 +90,6 @@ val pay_up : t -> string list -> t
     Requires: [s] has its players updated with the correct money values. *)
 val update_state : t -> t
 
-(** [get_hand] is the hand of player *)
-val get_hand : player -> Game.deck
 
 (****************************** DISPLAY CARDS ********************************)
 
@@ -110,17 +108,21 @@ val print_dealer_hand : t -> bool -> unit
 (** [get_hand_of_name state] prints the one hidden card in the dealers hand *)
 val print_dealer_hidden : t -> unit
 
-(** [get_hand_of_name state] prints the one hidden card in the dealers hand *)
+(** this type gives information about the cards played already*)
 type used_deck
 
-(** [get_hand_of_name state] prints the one hidden card in the dealers hand *)
+(** [add_used_cards] adds the cards from each players hand into the association
+    list recording played cards *)
 val add_used_cards : used_deck -> player list -> used_deck
 
-(** [get_hand_of_name state] prints the one hidden card in the dealers hand *)
+(** [restart] creates a new empty type used_deck*)
 val restart : unit -> used_deck
 
-(** [get_hand_of_name state] prints the one hidden card in the dealers hand *)
+(** [get_used_cards] is the used_cards of [used] *)
 val get_used_cards : used_deck -> (int * int) list
 
-(** [get_hand_of_name state] prints the one hidden card in the dealers hand *)
+(** [get_total_left] is the total_left of [used]*)
 val get_total_left : used_deck -> int
+
+(** [get_used state] is the used_deck used of state*)
+val get_used : t -> used_deck

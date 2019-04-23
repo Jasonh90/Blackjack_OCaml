@@ -41,6 +41,7 @@ let rec play (state: State.t) (prev_invalid : bool) : unit =
     let current = State.get_current_player_name state in 
     let command = 
       if current = "Dealer" then dealer (get_players_list state) (get_player_hand state current) 
+      else if current = "AI" then ai_turn (get_used state) (get_player_hand state current) 0.6
       else ( 
         print state false;
         if prev_invalid then print_invalid () else ();
