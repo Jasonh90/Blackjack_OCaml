@@ -31,10 +31,10 @@ type t
     [hand], a wallet balance of [dollars], and a bet [bet_val] *)
 val make_player: string -> Game.deck -> player_status -> int -> int -> player
 
-(** [init_state player_name] creates the initial state of the game. A new deck is
-    created, two cards are handed to player with [player_name] and two cards are handed
-    to the 'dealer'. The first turn goes to player.*)
-val init_state : string -> t
+(** [init_state player_names] creates the initial state of the game. A new deck is
+    created, two cards are handed to players in [player_names] and two cards are handed
+    to the 'dealer'. The first turn goes to first player in [player_names].*)
+val init_state : string list -> t
 
 (** [get_current_player_name state] is the name of the current player in [state]*)
 val get_current_player_name : t -> string

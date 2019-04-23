@@ -40,21 +40,24 @@ type t = {
 let make_player str hand status dollars bet_val : player = 
   { name = str; hand = hand; status = status; wallet = dollars; bet = bet_val}
 
-(** [init_state player_name] creates the initial state of the game. A new deck is
-    created, two cards are handed to player with [player_name] and two cards are handed
-    to the 'dealer'. The first turn goes to player.*)
-let init_state player_name = 
-  let deck = make_deck in (* initialize deck *)
-  let deal_to_player = deal deck empty_deck 2 in (* new deck, player hand *)
-  let new_deck = fst deal_to_player in
-  let deal_to_dealer = deal new_deck empty_deck 2 in (* new deck, dealer hand *)
-  (* create players *)
-  let player = make_player player_name (snd deal_to_player) Playing 500 0 in
+(** [init_state player_names] creates the initial state of the game. A new deck is
+    created, two cards are handed to players in [player_names] and two cards are handed
+    to the 'dealer'. The first turn goes to first player in [player_names].*)
+let init_state player_names = 
+  let rec create_players deck names acc = 
+    match names with 
+    | [] -> (deck, acc) (* new deck, players list *)
+    | h::t ->
+      let deal_to_player = deal deck empty_deck 2 in (* new deck, player hand *)
+      let player = make_player h (snd deal_to_player) Playing 500 0 in (* create player *)
+      create_players (fst deal_to_player) t (acc@[player]) in
+  let new_players = create_players make_deck player_names [] in
+  let deal_to_dealer = deal (fst new_players) empty_deck 2 in (* new deck, dealer hand *)
   let dealer = make_player "Dealer" (snd deal_to_dealer) Playing 5000 0 in
   (* return initialized state *)
   {
-    players = [player; dealer];
-    current_player_name = player.name;
+    players = snd new_players@[dealer];
+    current_player_name = List.hd player_names;
     card_deck = fst deal_to_dealer;
   }
 

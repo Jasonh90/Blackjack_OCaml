@@ -6,6 +6,14 @@ type command =
   | Bet of int
   | Quit
 
+type game_mode = 
+  | Singleplayer
+  | Multiplayer
+
+type socket_command =
+  | Host
+  | Join of string
+
 (** Raised when a malformed command is encountered. *)
 exception Malformed
 
@@ -17,4 +25,16 @@ let parse str =
   | ["check"] -> Check
   | ["quit"] -> Quit
   | ["bet";n] -> (try Bet (int_of_string n) with Failure _ -> raise Malformed)
+  | _ -> raise Malformed
+
+let parse_game_mode str = 
+  match Str.split (Str.regexp " ") (String.lowercase_ascii str) with 
+  | ["single"] -> Singleplayer
+  | ["multi"] -> Multiplayer
+  | _ -> raise Malformed
+
+let parse_socket str = 
+  match Str.split (Str.regexp " ") (String.lowercase_ascii str) with 
+  | ["host"] -> Host
+  | ["join"; n] -> Join n
   | _ -> raise Malformed
