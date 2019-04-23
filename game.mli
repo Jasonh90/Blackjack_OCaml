@@ -47,6 +47,11 @@ val has_blackjack : deck -> bool
 (** [combine_cards d1 d2] is the union of two decks [d1] & [d2]. *)
 val combine_cards : deck -> deck -> deck 
 
+(** [get_number card] is the number of [card] *)
+val get_number : card -> int
+
+
+
 
 
 

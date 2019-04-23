@@ -93,6 +93,10 @@ let rec combine_cards (deck1 : deck) (deck2 : deck) : deck =
     then combine_cards t deck2 
     else combine_cards t (h::deck2)
 
+    
+let get_number card = 
+  card.number
+
 
 
 
