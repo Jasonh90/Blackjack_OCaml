@@ -70,8 +70,6 @@ let get_used_cards used = used.used_cards
 let get_total_left used = used.total_left
 
 
-
-
 (** [cards_in_play s] is the current cards in play. *)
 let rec cards_in_play (state : t) : deck  = 
   let rec add_cards acc = function
