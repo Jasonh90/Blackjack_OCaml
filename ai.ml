@@ -29,11 +29,11 @@ let rec add_deck lst hand =
 
 (** [add_used_cards lst players] is [lst] with the numbers from the hand of each
     player in [players] appended*)
-let rec add_used_cards used players = 
+let rec add_used_cards used (players : player list) = 
   match players with
   |[] -> used
   |h :: t -> let old_used_cards = used.used_cards in 
-    add_used_cards {used with used_cards= (add_deck old_used_cards h)} t
+    add_used_cards {used with used_cards= (add_deck old_used_cards (Game.deck_to_list (get_hand h)))} t
 
 (** [valid_cards ] is a list containing all the numbers that a player could receive
     on a hit without busting*)
@@ -60,3 +60,14 @@ let rec calc_total_prob valid used sum : float=
   match valid with
   |[] -> sum
   |h :: t -> calc_total_prob t used (sum +. (calc_prob h used))
+
+(** [ai_turn used hand accuracy] calculates the probability that the next card 
+    pulled will be a valid card and hits if this probability is greater than 
+    [accuracy] otherwise the ai player checks*)
+let ai_turn used hand accuracy= 
+  let prob = calc_total_prob (valid_cards hand) used 0.0 in 
+  if prob > accuracy then Hit else Check
+
+(** [restart] is a new used_deck with no bindings to be used 
+    when the deck is reshuffled*)
+let restart : used_deck = {used_cards = []; total_left = 52;}

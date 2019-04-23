@@ -54,7 +54,8 @@ val combine_cards : deck -> deck -> deck
 (** [get_number card] is the number of [card] *)
 val get_number : card -> int
 
-
+(** [get_number card] is the number of [card] *)
+val deck_to_list : deck -> card list
 
 
 

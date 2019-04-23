@@ -295,6 +295,9 @@ let update_state (state : t) : t =
 
 
 
+(** [get_hand player] is the hand of [player]*)
+let get_hand player =
+  player.hand 
 
 (* WHEN RESHUFFLING, TELL AI SOMEHOW THAT THE GAME RESHUFFLED THE DECK. *)
 
