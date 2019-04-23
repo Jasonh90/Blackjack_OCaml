@@ -18,15 +18,16 @@ let print state (w:bool)=
   clear_above ();
   if w then print_winner state else print_dealer_hidden state
 
-let rec play (state: State.t) (prev_invalid : bool)= 
+let rec play (state: State.t) (prev_invalid : bool) : unit = 
   match check_game_status state with
   | Winner x -> (** either (1) dealer is the only person that won OR (2) non-dealer player(s) won *)
     print state true; 
     ANSITerminal.(print_string [blue;Bold] ("\n\nWinner(s): ")); 
     ignore(List.map (fun y -> print_string (y^" ")) x); 
-    (print_string"\n\n"); exit 0;
+    (print_string"\n\n"); next_round state x;
   | Draw x -> (** multiple players won, where one of the winners is dealer *)
-    print state true;ANSITerminal.(print_string [blue;Bold] ("\n\nPlayer(s) that drawed with dealer: ")); 
+    print state true;
+    ANSITerminal.(print_string [blue;Bold] ("\n\nPlayer(s) that drawed with dealer: ")); 
     ignore(List.map (fun y -> print_string (y^" ")) x); 
     (print_string"\n\n"); exit 0;
   | InProgress -> (** at least 1 player is still [Playing] status *)
@@ -46,9 +47,19 @@ let rec play (state: State.t) (prev_invalid : bool)=
     | Bet _ -> play state true
     | exception Malformed -> play state true
 
-(** [before_round state] is the betting stage before the round begins. 
+(* [next_round state winners] is the transition to the next round. This checks
+    who the [winners] are and correctly distributes the money to the respective players
+    or the dealer.  
+    Requires: [winners] does not include the dealer. 
+    Returns: a new state with each player having their correct money value. *)
+and next_round (state : State.t) (winners : string list) = 
+  before_round (update_state (pay_up state winners)) false
+
+(** [before_round state prev_invalid] is the betting stage before the round begins. This gets 
+    the current player's info and displays it. This will ask the current player 
+    how much to bet and wait for the player to respond. 
     Requires: [state] is initialized (init_state). *)
-let rec before_round (state : State.t) prev_invalid =
+and before_round (state : State.t) (prev_invalid : bool) : unit =
   let current = get_current_player_name state in
   let current_player_wallet = get_player_wallet state current in
 
@@ -81,3 +92,13 @@ let main () =
 
 (* Execute the game engine. *)
 let () = main ()
+
+
+(* NOTES TO SELF:
+1) change that hard coded part in state.ml with "jason"
+2) change interface to have the current bet and different output when won or lost
+3) sendingt that bool to AI.... hmm maybe part of deal in Game...?
+4) Malformed isn't being detected for some reason...?
+5) implement draw
+6) update documentation
+7)  *)

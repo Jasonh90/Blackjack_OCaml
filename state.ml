@@ -35,19 +35,26 @@ type t = {
   card_deck: deck;
 }
 
+(** [cards_in_play s] is the current cards in play. *)
+let rec cards_in_play (state : t) : deck  = 
+  let rec add_cards acc = function
+    | [] -> acc
+    | h::t -> add_cards (combine_cards h.hand acc) t
+  in add_cards empty_deck state.players
+
 (** [make_player str hand] makes a new player with name [str], starting hand 
     [hand], a wallet balance of [dollars], and a bet [bet_val] *)
 let make_player str hand status dollars bet_val : player = 
   { name = str; hand = hand; status = status; wallet = dollars; bet = bet_val}
 
-(** [init_state player_name] creates the initial state of the game. A new deck is
+(** [init_state player_name] creates the initial state of the first game. A new deck is
     created, two cards are handed to player with [player_name] and two cards are handed
     to the 'dealer'. The first turn goes to player.*)
 let init_state player_name = 
   let deck = make_deck in (* initialize deck *)
-  let deal_to_player = deal deck empty_deck 2 in (* new deck, player hand *)
+  let deal_to_player = deal deck empty_deck empty_deck 2 in (* new deck, player hand *)
   let new_deck = fst deal_to_player in
-  let deal_to_dealer = deal new_deck empty_deck 2 in (* new deck, dealer hand *)
+  let deal_to_dealer = deal new_deck empty_deck empty_deck 2 in (* new deck, dealer hand *)
   (* create players *)
   let player = make_player player_name (snd deal_to_player) Playing 500 0 in
   let dealer = make_player "Dealer" (snd deal_to_dealer) Playing 5000 0 in
@@ -77,7 +84,7 @@ let get_players_list state =
 let get_player_hand (state : t) (name : string) : deck = 
   (get_player_by_name state name).hand
 
-let get_player_bet (state : t) (name : string) (bet : int) : int = 
+let get_player_bet (state : t) (name : string) : int = 
   (get_player_by_name state name).bet
 
 let get_player_wallet (state : t) (name : string) : int = 
@@ -109,7 +116,7 @@ let hit state =
   let rec match_player players acc = (* find current player and deal out a new card *)
     match players with 
     | h::t -> if h.name = current_player then (
-        let deal_to_player = deal state.card_deck h.hand 1 in (* new deck, new player hand *)
+        let deal_to_player = deal state.card_deck h.hand (cards_in_play state) 1 in (* new deck, new player hand *)
         let new_status = if calculate_score (snd deal_to_player) > 21 then Busted else Playing in (* determine new status *)
         let players = acc@[make_player (h.name) (snd deal_to_player) new_status h.wallet h.bet]@t in (* update current player's hand and status *)
         (** updated state *)
@@ -215,9 +222,68 @@ let check_game_status state =
     | _ -> failwith "no match"
   in check_players players
 
+(** [change_players_to_playing status state] is the [state] with all the players' 
+    statuses changed to [status]. *)
+let change_players_statuses_to (status : player_status) (state : t) : t = 
+  let rec change acc = function
+    | [] -> acc
+    | h::t -> change ({h with status = status}::acc) t
+  in {state with players = (change [] state.players)}
+
+(** [pay_up state winners] is the updated state after a round. Each winner earns 
+    their bet value while the dealer earns each bet that each players loses. The 
+    order of the players' list is not maintained. This only pays the respective 
+    players their portion of the money. None of the other parts of the [state]
+    is altered. 
+    Example: "Jason" bets 55 & gets blackjack, "Dealer" busts -> "Jason" earns 55
+    "Jason" bets 13 and busts -> "Dealer" earns 13 *)
+let rec pay_up (state : t) (winners : string list) : t = 
+  (* Update all players but the dealer, get the dealer's earnings/losings *)
+  let rec update_players (acc : player list) (dealers_wallet : int) = function
+    (* When this happens, acc should have all the players. *)
+    | [] when acc == [] -> failwith "acc is empty"
+    | [] -> acc, dealers_wallet
+    (* When a player won -> they earn 2x their bet, dealer loses 1x bet *)
+    | h::t when List.mem h.name winners && h.name <> "Dealer" -> 
+      update_players ({h with wallet = h.wallet + 2 * h.bet; bet = 0}::acc) 
+        (dealers_wallet - h.bet) t
+    (* When a player lost -> they lose their bet, dealer earns *)
+    | h::t when h.name <> "Dealer" -> update_players ({h with bet = 0}::acc) (dealers_wallet + h.bet) t
+    (* Skip Dealer, add onto acc *)
+    | h::t -> update_players (h::acc) dealers_wallet t
+  in 
+  let players, d_wallet = update_players [] (get_player_wallet state "Dealer") state.players in 
+  (* Pay the dealer with the updated dealer wallet from the previous function. *)
+  let rec pay_dealer (state : t) acc = function
+    (* There shouldn't be a case when state.players is [] *)
+    | [] -> failwith "No players."
+    (* Return the new state with dealer's wallet updated *)
+    | h::t when h.name = "Dealer" -> {state with players = (acc@{h with bet = 0; wallet = d_wallet}::t)}
+    (* Not dealer yet, keep looping... *)
+    | h::t ->   pay_dealer state (h::acc) t 
+  in pay_dealer state [] players
+
+(** [update_state s] is the updated state [s] where each player's hands are 
+    redealt. If there's not enough cards in the deck, the deck will be re-shuffled
+    without the current cards in play. The order of the players are not maintained. 
+    This sets up the game for the next round. Each player's status is now Playing. *)
+let update_state (state : t) : t = 
+  (* [update_players acc deck] is the updated player list. *)
+  let rec update_players acc deck = function
+    | player::players -> 
+      (* deal takes care of not enough cards to give out. *)
+      let deal_to_player = deal deck empty_deck (cards_in_play state) 2 in 
+      let new_deck = fst deal_to_player in
+      (* let deal_to_dealer = deal new_deck empty_deck (cards_in_play state) 2 in  *)
+      let updated_player = {player with hand = (snd deal_to_player); status = Playing} in
+      (* let dealer = make_player "Dealer" (snd deal_to_dealer) Playing player.wallet 0 in *)
+      update_players (updated_player::acc) new_deck players
+    | [] -> acc,deck
+  in let updated_players, updated_deck = update_players [] state.card_deck state.players 
+  in {players = updated_players;current_player_name="jason"; card_deck = updated_deck}
 
 
-
+(* WHEN RESHUFFLING, TELL AI SOMEHOW THAT THE GAME RESHUFFLED THE DECK. *)
 
 (****************************** DISPLAY CARDS ********************************)
 

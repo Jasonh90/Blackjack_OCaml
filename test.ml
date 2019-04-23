@@ -44,7 +44,7 @@ let commandTests =
 
 let empty = empty_deck
 let blackjack = deck_test 11 Diamonds (deck_test 1 Spades empty) (* deck : ace, face *)
-let deck_5 = deal make_deck blackjack 3 (* deck : ace, face + 3 more unknown cards *)
+let deck_5 = deal make_deck blackjack empty_deck 3 (* deck : ace, face + 3 more unknown cards *)
 let deck_21 = deck_test 1 Spades (deck_test 1 Hearts (deck_test 8 Diamonds (deck_test 1 Clubs empty))) (* deck : ace, ace, ace, 8 *)
 
 let gameTests = 

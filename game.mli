@@ -30,9 +30,12 @@ val empty_deck : deck
 (** [size deck] is the number of cards in [deck]. *)
 val size : deck -> int
 
-(** [deal deck hand num] is a tuple containing the remaining deck and the 
-    resulting hand from dealing [num] cards into [hand]*)
-val deal : deck -> deck -> int -> deck*deck
+(** [deal deck hand cards_in_play num] is a tuple containing [deck] with the first 
+    [num] cards removed and [hand] with the first [num] cards of [deck] appended. 
+    This checks if there's enough cards in the [deck]; if there's not enough, except 
+    the [cards_in_play]. The other cards will be shuffled back into the [deck], and the
+    original operation takes place. *)
+val deal : deck -> deck -> deck -> int -> deck * deck
 
 (** [calculate_score hand] is the total value of the cards in [hand] counting cards 
     10-13 to be worth 10 points and aces to be worth either 1 or 11 points. *)
@@ -41,7 +44,8 @@ val calculate_score : deck -> int
 (** [has_blackjack hand] is true if [hand] has a blackjack (face card & ace) *)
 val has_blackjack : deck -> bool
 
-
+(** [combine_cards d1 d2] is the union of two decks [d1] & [d2]. *)
+val combine_cards : deck -> deck -> deck 
 
 
 

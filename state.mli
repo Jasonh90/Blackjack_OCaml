@@ -31,7 +31,7 @@ type t
     [hand], a wallet balance of [dollars], and a bet [bet_val] *)
 val make_player: string -> Game.deck -> player_status -> int -> int -> player
 
-(** [init_state player_name] creates the initial state of the game. A new deck is
+(** [init_state player_name] creates the initial state of the first game. A new deck is
     created, two cards are handed to player with [player_name] and two cards are handed
     to the 'dealer'. The first turn goes to player.*)
 val init_state : string -> t
@@ -45,8 +45,8 @@ val get_players_list : t -> player list
 (** [get_hand_of_name state] is the hand of [name] *)
 val get_player_hand : t -> string -> Game.deck
 
-(** [get_player_bet state] is the bet of [name] *)
-val get_player_bet : t -> string -> int -> int
+(** [get_player_bet state name] is the bet of [name] *)
+val get_player_bet : t -> string -> int
 
 (** [get_player_wallet_by_name] is the wallet of [name] *)
 val get_player_wallet : t -> string -> int
@@ -74,8 +74,21 @@ val bet : t -> int -> t
     list of player names that won.*)
 val check_game_status : t -> game_status
 
+(** [pay_up state winners] is the updated state after a round. Each winner earns 
+    their bet value while the dealer earns each bet that each players loses. The 
+    order of the players' list is not maintained. This only pays the respective 
+    players their portion of the money. None of the other parts of the [state]
+    is altered. 
+    Example: "Jason" bets 55 & gets blackjack, "Dealer" busts -> "Jason" earns 55
+    "Jason" bets 13 and busts -> "Dealer" earns 13 *)
+val pay_up : t -> string list -> t
 
-
+(** [update_state s] is the updated state [s] where each player's hands are 
+    redealt. If there's not enough cards in the deck, the deck will be re-shuffled
+    without the current cards in play. The order of the players are not maintained. 
+    This sets up the game for the next round.
+    Requires: [s] has its players updated with the correct money values. *)
+val update_state : t -> t
 
 
 (****************************** DISPLAY CARDS ********************************)
