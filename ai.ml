@@ -11,29 +11,6 @@ let dealer player_lst hand =
     let score = calculate_score hand in
     if score <= 17 then Hit else Check
 
-type used_deck = {
-  used_cards: (int * int) list;
-  total_left: int;
-}
-
-(** [add_deck lst hand] is [lst] with the (num,1) appended if num was not already 
-    in [lst] and (num,x+1) appended to replace the pair (num, x) if num was already 
-    a member of [lst] where num is the number of each card in [hand]*)
-let rec add_deck lst hand = 
-  match hand with 
-  |[] -> lst
-  | h :: t -> if not (List.mem_assoc (get_number h) lst) then add_deck (((get_number h),1) :: lst) t else
-      let current = List.assoc (get_number h) lst in 
-      let new_lst = List.remove_assoc (get_number h) lst in 
-      add_deck (((get_number h), current + 1) :: new_lst) t
-
-(** [add_used_cards lst players] is [lst] with the numbers from the hand of each
-    player in [players] appended*)
-let rec add_used_cards used (players : player list) = 
-  match players with
-  |[] -> used
-  |h :: t -> let old_used_cards = used.used_cards in 
-    add_used_cards {used with used_cards= (add_deck old_used_cards (Game.deck_to_list (get_hand h)))} t
 
 (** [valid_cards ] is a list containing all the numbers that a player could receive
     on a hit without busting*)
@@ -49,9 +26,9 @@ let valid_cards hand =
     having the number [x] where [len] is the number of cards left in the deck and 
     [lst] gives information on the cards used already*)
 let calc_prob x used : float = 
-  let left = if List.mem_assoc x used.used_cards then 4.0 -. (float(List.assoc x used.used_cards))
+  let left = if List.mem_assoc x (get_used_cards used) then 4.0 -. (float(List.assoc x (get_used_cards used)))
     else 4.0 in 
-  left /. float(used.total_left)
+  left /. float (get_total_left used)
 
 (** [calc_total_prob valid lst len sum] is a float containing the probability of the next card 
     having any number in the int lst [valid] where [len] is the number of cards left in the deck and 
@@ -67,7 +44,3 @@ let rec calc_total_prob valid used sum : float=
 let ai_turn used hand accuracy= 
   let prob = calc_total_prob (valid_cards hand) used 0.0 in 
   if prob > accuracy then Hit else Check
-
-(** [restart] is a new used_deck with no bindings to be used 
-    when the deck is reshuffled*)
-let restart () : used_deck = {used_cards = []; total_left = 52;}

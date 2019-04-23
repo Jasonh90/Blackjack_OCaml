@@ -110,4 +110,17 @@ val print_dealer_hand : t -> bool -> unit
 (** [get_hand_of_name state] prints the one hidden card in the dealers hand *)
 val print_dealer_hidden : t -> unit
 
+(** [get_hand_of_name state] prints the one hidden card in the dealers hand *)
+type used_deck
 
+(** [get_hand_of_name state] prints the one hidden card in the dealers hand *)
+val add_used_cards : used_deck -> player list -> used_deck
+
+(** [get_hand_of_name state] prints the one hidden card in the dealers hand *)
+val restart : unit -> used_deck
+
+(** [get_hand_of_name state] prints the one hidden card in the dealers hand *)
+val get_used_cards : used_deck -> (int * int) list
+
+(** [get_hand_of_name state] prints the one hidden card in the dealers hand *)
+val get_total_left : used_deck -> int

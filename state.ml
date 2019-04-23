@@ -28,13 +28,49 @@ type player = {
   bet: int;
 }
 
+(** this type contains information about cards that have been played already*)
+type used_deck = {
+  used_cards: (int * int) list;
+  total_left: int;
+}
+
 (** The abstract type of values representing the current game state. *)
 type t = {
   players: player list;
   current_player_name: string;
   card_deck: deck;
-  used: Ai.used_deck;
+  used: used_deck;
 }
+
+(** [restart] is a new used_deck with no bindings to be used 
+    when the deck is reshuffled*)
+let restart () : used_deck = {used_cards = []; total_left = 52;}
+
+(** [add_deck lst hand] is [lst] with the (num,1) appended if num was not already 
+    in [lst] and (num,x+1) appended to replace the pair (num, x) if num was already 
+    a member of [lst] where num is the number of each card in [hand]*)
+let rec add_deck lst hand = 
+  match hand with 
+  |[] -> lst
+  | h :: t -> if not (List.mem_assoc (get_number h) lst) then add_deck (((get_number h),1) :: lst) t else
+      let current = List.assoc (get_number h) lst in 
+      let new_lst = List.remove_assoc (get_number h) lst in 
+      add_deck (((get_number h), current + 1) :: new_lst) t
+
+(** [add_used_cards lst players] is [lst] with the numbers from the hand of each
+    player in [players] appended*)
+let rec add_used_cards used (players : player list) = 
+  match players with
+  |[] -> used
+  |h :: t -> let old_used_cards = used.used_cards in 
+    add_used_cards {used with used_cards= (add_deck old_used_cards (Game.deck_to_list (h.hand)))} t
+
+let get_used_cards used = used.used_cards
+
+let get_total_left used = used.total_left
+
+
+
 
 (** [cards_in_play s] is the current cards in play. *)
 let rec cards_in_play (state : t) : deck  = 
@@ -64,7 +100,7 @@ let init_state player_name =
     players = [player; dealer];
     current_player_name = player.name;
     card_deck = fst deal_to_dealer;
-    used = Ai.restart ();
+    used = restart ();
   }
 
 (** [get_player_by_name state] is the player whose name is [name]. *)
