@@ -90,6 +90,8 @@ val pay_up : t -> string list -> t
     Requires: [s] has its players updated with the correct money values. *)
 val update_state : t -> t
 
+(** [get_hand] is the hand of player *)
+val get_hand : player -> Game.deck
 
 (****************************** DISPLAY CARDS ********************************)
 

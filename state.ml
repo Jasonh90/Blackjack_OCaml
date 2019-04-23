@@ -282,6 +282,9 @@ let update_state (state : t) : t =
   in let updated_players, updated_deck = update_players [] state.card_deck state.players 
   in {players = updated_players;current_player_name="jason"; card_deck = updated_deck}
 
+(** [get_hand player] is the hand of [player]*)
+let get_hand player =
+  player.hand 
 
 (* WHEN RESHUFFLING, TELL AI SOMEHOW THAT THE GAME RESHUFFLED THE DECK. *)
 

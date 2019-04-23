@@ -93,11 +93,14 @@ let rec combine_cards (deck1 : deck) (deck2 : deck) : deck =
     then combine_cards t deck2 
     else combine_cards t (h::deck2)
 
-    
+(** [get_number card] is the int representing the number on the 
+    card [card]*)
 let get_number card = 
   card.number
 
-
+(** [deck_to_list deck] is the card list representing [deck]*)
+let deck_to_list deck : card list =
+  deck
 
 
 
