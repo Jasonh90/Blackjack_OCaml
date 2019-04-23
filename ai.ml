@@ -70,4 +70,4 @@ let ai_turn used hand accuracy=
 
 (** [restart] is a new used_deck with no bindings to be used 
     when the deck is reshuffled*)
-let restart : used_deck = {used_cards = []; total_left = 52;}
+let restart () : used_deck = {used_cards = []; total_left = 52;}

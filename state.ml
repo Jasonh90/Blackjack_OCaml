@@ -33,6 +33,7 @@ type t = {
   players: player list;
   current_player_name: string;
   card_deck: deck;
+  used: Ai.used_deck;
 }
 
 (** [cards_in_play s] is the current cards in play. *)
@@ -63,6 +64,7 @@ let init_state player_name =
     players = [player; dealer];
     current_player_name = player.name;
     card_deck = fst deal_to_dealer;
+    used = Ai.restart ();
   }
 
 (** [get_player_by_name state] is the player whose name is [name]. *)
@@ -120,11 +122,11 @@ let hit state =
         let new_status = if calculate_score (snd deal_to_player) > 21 then Busted else Playing in (* determine new status *)
         let players = acc@[make_player (h.name) (snd deal_to_player) new_status h.wallet h.bet]@t in (* update current player's hand and status *)
         (** updated state *)
-        {
-          players = players;
-          current_player_name = if new_status = Playing then current_player (* Playing -> don't change turns *)
-            else next_player_name current_player t; (* Busted -> find next player *)
-          card_deck = (fst deal_to_player);
+        {state with
+         players = players;
+         current_player_name = if new_status = Playing then current_player (* Playing -> don't change turns *)
+           else next_player_name current_player t; (* Busted -> find next player *)
+         card_deck = (fst deal_to_player);
         }
       )
       else match_player t (acc@[h])
@@ -140,7 +142,7 @@ let check state =
     | h::t -> if h.name = current_player then (
         let players = acc@[make_player (h.name) h.hand Checked h.wallet h.bet]@t in (* update current player's status *)
         (** updated state *)
-        {
+        { state with
           players = players;
           current_player_name = next_player_name current_player t; (* find next player *)
           card_deck = state.card_deck;
@@ -160,10 +162,10 @@ let bet (state : t) (bet_val : int) : t =
         (* update current player's hand and status *)
         let players = acc@[make_player h.name h.hand h.status player_dollars bet_val]@t in
         (** updated state *)
-        {
-          players = players;
-          current_player_name = current_player;
-          card_deck = state.card_deck;
+        {state with
+         players = players;
+         current_player_name = current_player;
+         card_deck = state.card_deck;
         }
       )
       else match_player t (acc@[h])
@@ -282,12 +284,12 @@ let update_state (state : t) : t =
       let updated_player = {player with hand = (snd deal_to_player); status = Playing} in
       (* let dealer = make_player "Dealer" (snd deal_to_dealer) Playing player.wallet 0 in *)
       update_players (acc@[updated_player]) new_deck players
-    | [] -> acc,deck in 
-  let updated_players, updated_deck = update_players [] state.card_deck state.players in
-  {
-    players = updated_players;
-    current_player_name = (List.hd updated_players).name; 
-    card_deck = updated_deck
+    | [] -> acc,deck
+  in let updated_players, updated_deck = update_players [] state.card_deck state.players in
+  {state with
+   players = updated_players;
+   current_player_name = (List.hd updated_players).name; 
+   card_deck = updated_deck
   }
 
 
