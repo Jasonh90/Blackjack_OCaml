@@ -320,10 +320,12 @@ let update_state (state : t) : t =
       update_players (acc@[updated_player]) new_deck players
     | [] -> acc,deck
   in let updated_players, updated_deck = update_players [] state.card_deck state.players in
-  {state with
-   players = updated_players;
-   current_player_name = (List.hd updated_players).name; 
-   card_deck = updated_deck
+  let new_used = add_used_cards state.used state.players in
+  {
+    players = updated_players;
+    current_player_name = (List.hd updated_players).name; 
+    card_deck = updated_deck;
+    used = new_used;
   }
 
 
