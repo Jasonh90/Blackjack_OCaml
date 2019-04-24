@@ -19,6 +19,10 @@ type socket_command =
   | Host
   | Join of string
 
+type ai_command =
+  | Yes
+  | No
+
 (** Raised when a malformed command is encountered. *)
 exception Malformed
 
@@ -29,3 +33,5 @@ val parse : string -> command
 val parse_game_mode : string -> game_mode
 
 val parse_socket : string -> socket_command
+
+val parse_ai : string -> ai_command

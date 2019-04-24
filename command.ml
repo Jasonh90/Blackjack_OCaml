@@ -14,6 +14,10 @@ type socket_command =
   | Host
   | Join of string
 
+type ai_command =
+  | Yes
+  | No
+
 (** Raised when a malformed command is encountered. *)
 exception Malformed
 
@@ -37,4 +41,10 @@ let parse_socket str =
   match Str.split (Str.regexp " ") (String.lowercase_ascii str) with 
   | ["host"] -> Host
   | ["join"; n] -> Join n
+  | _ -> raise Malformed
+
+let parse_ai str = 
+  match Str.split (Str.regexp " ") (String.lowercase_ascii str) with 
+  | ["yes"] -> Yes
+  | ["no"] -> No
   | _ -> raise Malformed

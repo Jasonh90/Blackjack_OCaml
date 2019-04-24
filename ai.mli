@@ -11,3 +11,11 @@ open State
     dealer calls check. Otherwise, when dealer has cards totaling to 16 or less, 
     dealer calls hit. If not, dealer calls check. *)
 val dealer : player list -> deck -> command
+
+val valid_cards : deck -> int list
+
+val calc_prob : int -> used_deck -> float
+
+val calc_total_prob : int list -> used_deck -> float -> float
+
+val ai_turn : used_deck -> deck -> float -> command

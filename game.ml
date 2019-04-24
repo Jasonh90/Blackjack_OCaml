@@ -19,6 +19,11 @@ exception EmptyDeck
 let deck_test num suit deck =
   deck@[{number=num; suit=suit}]
 
+let make_card num suit = 
+  {number=num;suit=suit}
+
+let is_in a b = List.mem a b
+
 (** [add_cards x lst a] is a list where cards (a+1) through x of each suit are 
     appended to [lst] *)
 let rec add_cards x lst a =
@@ -33,23 +38,31 @@ let rec add_cards x lst a =
 let shuffle lst =
   QCheck.Gen.(generate1 (shuffle_l lst))
 
-(** [make_deck] creates a full deck of cards including 1-13 of each suit and 
-    shuffles it *)
-let make_deck = shuffle (add_cards 13 [] 0)
-
 (** [empty_deck] is a deck with zero cards. *)
 let empty_deck = []
+
+(** [make_deck] creates a full deck of cards including 1-13 of each suit and 
+    shuffles it *)
+let make_deck = shuffle (add_cards 13 empty_deck 0)
 
 (** [size deck] is the number of cards in [deck]. *)
 let size (deck : deck) = List.length deck 
 
-(** [deal deck hand num] is a tuple containing [deck] with the first [num] cards
-    removed and [hand] with the first [num] cards of [deck] appended*)
-let rec deal deck hand num = 
-  if num = 0 then (deck, hand) 
-  else match deck with 
-    | [] ->  raise EmptyDeck
-    | h::t -> deal t (h::hand) (num-1)
+(** [deal deck hand cards_in_play num] is a tuple containing [deck] with the first 
+    [num] cards removed and [hand] with the first [num] cards of [deck] appended. 
+    This checks if there's enough cards in the [deck]; if there's not enough, except 
+    the [cards_in_play]. The other cards will be shuffled back into the [deck], and the
+    original operation takes place. *)
+let rec deal (deck : deck) (hand : deck) (cards_in_play : deck)= function
+  | 0 -> (deck, hand) 
+  | num -> match deck with 
+    | [] -> let rec new_deck acc = function
+        | [] -> acc
+        (* Don't include h when it's a mem of cards_in_play *)
+        | h::t when List.mem h cards_in_play -> new_deck acc t
+        | h::t -> new_deck (h::acc) t
+      in deal (new_deck empty_deck make_deck) hand cards_in_play num
+    | h::t -> deal t (h::hand) (h::cards_in_play) (num - 1)
 
 (** [calculate_score hand] is the total value of the cards in [hand] counting cards 
     10-13 to be worth 10 points and aces to be worth either 1 or 11 points. *)
@@ -77,9 +90,22 @@ let calculate_score hand =
 let has_blackjack hand = 
   calculate_score hand = 21 && size hand = 2
 
+(** [combine_cards d1 d2] is the union of two decks [d1] & [d2]. *)
+let rec combine_cards (deck1 : deck) (deck2 : deck) : deck = 
+  match deck1 with
+  | [] -> deck2
+  | h::t -> if List.mem h deck2 
+    then combine_cards t deck2 
+    else combine_cards t (h::deck2)
 
+(** [get_number card] is the int representing the number on the 
+    card [card]*)
+let get_number card = 
+  card.number
 
-
+(** [deck_to_list deck] is the card list representing [deck]*)
+let deck_to_list deck : card list =
+  deck
 
 
 
