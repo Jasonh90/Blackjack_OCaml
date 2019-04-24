@@ -205,8 +205,8 @@ let check state =
   in match_player state.players []
 
 (** [bet state] is an updated state with the current players bet updated to be bet_val*)
-let bet (state : t) (bet_val : int) : t = 
-  let current_player = get_current_player_name state in
+let bet (state : t) (bet_val : int) name : t = 
+  let current_player = name in
   let rec match_player players acc = (* find current player and deal out a new card *)
     match players with 
     | h::t -> if h.name = current_player then (
@@ -216,7 +216,7 @@ let bet (state : t) (bet_val : int) : t =
         (** updated state *)
         {state with
          players = players;
-         current_player_name = current_player;
+         current_player_name = state.current_player_name;
          card_deck = state.card_deck;
         }
       )

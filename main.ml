@@ -32,12 +32,12 @@ let print_round_end state f x str =
   (* Move onto next round *)
   f updated_state x
 
-let rec play (state: State.t) (prev_invalid : bool) multiplayer is_host: unit = 
+let rec play (state: State.t) (prev_invalid : bool) multiplayer = 
   match check_game_status state with
   | Winner x -> (** either (1) dealer is the only person that won OR (2) non-dealer player(s) won *)
-    print_round_end state next_round x "Winner(s): " multiplayer is_host;
+    print_round_end state next_round x "Winner(s): "; ()
   | Draw x -> (** multiple players won, where one of the winners is dealer *)
-    print_round_end state next_round x "Player(s) that drawed with dealer: " multiplayer is_host;
+    print_round_end state next_round x "Player(s) that drawed with dealer: "; ()
   | InProgress -> (** at least 1 player is still [Playing] status *)
     let current = State.get_current_player_name state in 
     let command = 
@@ -50,29 +50,30 @@ let rec play (state: State.t) (prev_invalid : bool) multiplayer is_host: unit =
         print_string ("Would you like to hit or check? \n> ");
         parse (read_line ()) ) in
     match command with
-    | Hit -> play (hit state) false multiplayer is_host
-    | Check -> play (check state) false multiplayer is_host
+    | Hit -> play (hit state) false multiplayer 
+    | Check -> play (check state) false multiplayer 
     | Quit -> print_quit ()
-    | Bet _ -> play state true multiplayer is_host
-    | exception Malformed -> play state true multiplayer is_host
+    | Bet _ -> play state true multiplayer 
+    | exception Malformed -> play state true multiplayer 
 
 (* [next_round state winners] is the transition to the next round. This checks
     who the [winners] are and correctly distributes the money to the respective players
     or the dealer.  
     Requires: [winners] does not include the dealer. 
     Returns: a new state with each player having their correct money value. *)
-and next_round (state : State.t) (winners : string list) multiplayer is_host = 
-  before_round (update_state state) false multiplayer is_host
+and next_round (state : State.t) (winners : string list) multiplayer  = 
+  before_round (update_state state) false multiplayer 
 
 (** [before_round state prev_invalid] is the betting stage before the round begins. This gets 
     the current player's info and displays it. This will ask the current player 
     how much to bet and wait for the player to respond. 
     Requires: [state] is initialized (init_state). *)
-and before_round (state : State.t) (prev_invalid : bool) multiplayer is_host: unit =
-  if not multiplayer then
-    let current = get_current_player_name state in
-    let current_player_wallet = get_player_wallet state current in
-    if (current_player_wallet = 0) then print_string "\nYou lose! Your balance is $0!\n\n" else (
+and before_round (state : State.t) (prev_invalid : bool) multiplayer names: unit =
+  let prompt_bet name : int = 
+    let current_player_wallet = get_player_wallet state name in
+    if (current_player_wallet = 0) 
+    then (print_string "\nYou lose! Your balance is $0!\n\n" ; 1 )
+    else (
       ANSITerminal.(erase Above; 
                     if prev_invalid then (print_invalid (); print_bet_helper "Hint: bet <val>") else ();
                     print_string [white;Bold] 
@@ -80,43 +81,26 @@ and before_round (state : State.t) (prev_invalid : bool) multiplayer is_host: un
                        string_of_int(current_player_wallet) 
                        ^ "\nHow much would like you like to bet?\n> "));
       match parse (read_line ()) with 
-      | Bet b when b > 0 && b <= current_player_wallet -> play (bet state b) false multiplayer is_host
+      | Bet b when b > 0 && b <= current_player_wallet -> b
       | Quit -> print_quit ()
-      | exception Malformed -> before_round state true multiplayer is_host
-      | _ -> before_round state true multiplayer is_host
-    )
+      | exception Malformed -> before_round state true multiplayer names; 1
+      | _ -> before_round state true multiplayer names; 1
+    ) in
+  if not multiplayer then
+    let name = List.hd names in
+    let b = prompt_bet name in play (bet state b name) false multiplayer 
   else 
-    failwith "unimplemented"
-
-
-let socket_send sock msg =
-  let len = String.length msg in
-  send sock (Bytes.of_string msg) 0 len []
-
-let socket_receive client_sock  =
-  let str = Bytes.create 1000 in
-  let len = recv client_sock str 0 1000 []  in
-  String.sub (Bytes.to_string str) 0 len
+    let player1 = List.hd names in 
+    let b1 = prompt_bet player1 in
+    let state1 = bet state b1 player1 in
+    let player2 = List.nth names 1 in 
+    let b2 = prompt_bet player2 in
+    let state2 = bet state1 b2 player2 in
+    play state2 false multiplayer 
 
 (** [play_game name] starts a new game of blackjack with player name [name]. *)
-let play_game name has_ai multiplayer is_host sock =
-  if not multiplayer then
-    let game = init_state name has_ai in before_round game false false is_host
-  else 
-    let game = init_state name has_ai in before_round game false true is_host
-
-let wait_for_players client_sock players call = 
-  let rec concat_names lst acc= 
-    match lst with 
-    | h::t -> concat_names t (acc^", "^h)
-    | [] -> acc in
-  (* let names = concat_names (List.tl lst) (List.hd lst) in
-     print_endline ("Players in Game: ["^names^"]");
-     print_endline ("Waiting for players to join..."); *)
-  let new_players = players@[socket_receive client_sock] in
-  let names = concat_names (List.tl new_players) (List.hd new_players) in
-  print_endline ("Players in Game: ["^names^"]");
-  print_endline ("Starting game...") ; new_players
+let play_game name has_ai multiplayer  =
+  let game = init_state name has_ai in before_round game false multiplayer name
 
 let prompt_player_name call = 
   print_endline "Please type your name below: \n";
@@ -152,32 +136,14 @@ let main () =
   | Singleplayer -> 
     let name = prompt_player_name () in
     let has_ai = prompt_ai () in
-    play_game [name] has_ai false false None
+    play_game [name] has_ai false 
   | Multiplayer ->
-    print_endline "Enter command: 'Host' OR 'Join [Address]'\n";
-    print_string  "> ";
-    let sock = socket PF_INET SOCK_STREAM 0 in
-    let _ = setsockopt sock SO_REUSEADDR true in (* restart server quickly *)
-    match parse_socket (read_line ()) with
-    | exception Malformed -> print_invalid ()
-    | Host ->
-      let host_name = gethostname() in
-      let _ = bind sock (socket_addr host_name) in
-      let name = prompt_player_name () in
-      print_endline ("Game hosted at: "^host_name);
-      print_endline ("Players in Game: ["^name^"]");
-      print_endline ("Waiting for players to join...");
-      let _ = listen sock 2 in (* 2 connections max *)
-      let client_sock, client_addr = accept sock in
-      let names = wait_for_players client_sock [name] () in
-      let has_ai = prompt_ai () in
-      play_game names has_ai true true sock
-    | Join host_name -> 
-      let _ = connect sock (socket_addr host_name) in
-      print_endline ("Game joined at: "^host_name);
-      let name = prompt_player_name () in
-      let _ = socket_send sock name in ()
-
+    print_endline "PLAYER 1";
+    let player1 = prompt_player_name () in
+    print_endline "PLAYER 2";
+    let player2 = prompt_player_name () in
+    let has_ai = prompt_ai () in
+    play_game [player1; player2] has_ai true
 
 (* Execute the game engine. *)
 let () = main ()

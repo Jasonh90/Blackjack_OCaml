@@ -66,7 +66,7 @@ val check : t -> t
 
 (** [bet state bet_val] is the updated state after the current player's bet has 
     been changed to [bet_val] *)
-val bet : t -> int -> t
+val bet : t -> int -> string -> t
 
 (** [check_game_status state] returns game_status according to all player's state. If at least 
     one player is [Playing], return game_status [InProgress]. If all players are [Busted], return [End].
