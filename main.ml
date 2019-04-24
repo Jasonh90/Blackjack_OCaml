@@ -20,7 +20,7 @@ let print_name name = ANSITerminal.(print_string [magenta;Bold] (name^"'s hand:\
 let print state (won : bool)= clear_above ();
   if won then print_winner state else print_dealer_hidden state
 
-let print_round_end state f x str = 
+let print_round_end state f x str multiplayer names : unit = 
   let updated_state = pay_up state x in
   print updated_state true;
   ANSITerminal.(print_string [blue;Bold] ("\n\n" ^ str)); 
@@ -30,14 +30,14 @@ let print_round_end state f x str =
   print_string "Press [Enter] to move to next round"; 
   ignore(read_line ()); 
   (* Move onto next round *)
-  f updated_state x
+  f updated_state x multiplayer names
 
-let rec play (state: State.t) (prev_invalid : bool) multiplayer = 
+let rec play (state: State.t) (prev_invalid : bool) multiplayer names : unit = 
   match check_game_status state with
   | Winner x -> (** either (1) dealer is the only person that won OR (2) non-dealer player(s) won *)
-    print_round_end state next_round x "Winner(s): "; ()
+    print_round_end state next_round x "Winner(s): " multiplayer names
   | Draw x -> (** multiple players won, where one of the winners is dealer *)
-    print_round_end state next_round x "Player(s) that drawed with dealer: "; ()
+    print_round_end state next_round x "Player(s) that drawed with dealer: " multiplayer names
   | InProgress -> (** at least 1 player is still [Playing] status *)
     let current = State.get_current_player_name state in 
     let command = 
@@ -50,25 +50,25 @@ let rec play (state: State.t) (prev_invalid : bool) multiplayer =
         print_string ("Would you like to hit or check? \n> ");
         parse (read_line ()) ) in
     match command with
-    | Hit -> play (hit state) false multiplayer 
-    | Check -> play (check state) false multiplayer 
+    | Hit -> play (hit state) false multiplayer names
+    | Check -> play (check state) false multiplayer names
     | Quit -> print_quit ()
-    | Bet _ -> play state true multiplayer 
-    | exception Malformed -> play state true multiplayer 
+    | Bet _ -> play state true multiplayer names
+    | exception Malformed -> play state true multiplayer names
 
 (* [next_round state winners] is the transition to the next round. This checks
     who the [winners] are and correctly distributes the money to the respective players
     or the dealer.  
     Requires: [winners] does not include the dealer. 
     Returns: a new state with each player having their correct money value. *)
-and next_round (state : State.t) (winners : string list) multiplayer  = 
-  before_round (update_state state) false multiplayer 
+and next_round (state : State.t) (winners : string list) multiplayer names = 
+  before_round (update_state state) false multiplayer names
 
 (** [before_round state prev_invalid] is the betting stage before the round begins. This gets 
     the current player's info and displays it. This will ask the current player 
     how much to bet and wait for the player to respond. 
     Requires: [state] is initialized (init_state). *)
-and before_round (state : State.t) (prev_invalid : bool) multiplayer names: unit =
+and before_round (state : State.t) (prev_invalid : bool) multiplayer names : unit =
   let prompt_bet name : int = 
     let current_player_wallet = get_player_wallet state name in
     if (current_player_wallet = 0) 
@@ -88,7 +88,7 @@ and before_round (state : State.t) (prev_invalid : bool) multiplayer names: unit
     ) in
   if not multiplayer then
     let name = List.hd names in
-    let b = prompt_bet name in play (bet state b name) false multiplayer 
+    let b = prompt_bet name in play (bet state b name) false multiplayer names
   else 
     let player1 = List.hd names in 
     let b1 = prompt_bet player1 in
@@ -96,11 +96,11 @@ and before_round (state : State.t) (prev_invalid : bool) multiplayer names: unit
     let player2 = List.nth names 1 in 
     let b2 = prompt_bet player2 in
     let state2 = bet state1 b2 player2 in
-    play state2 false multiplayer 
+    play state2 false multiplayer names
 
 (** [play_game name] starts a new game of blackjack with player name [name]. *)
-let play_game name has_ai multiplayer  =
-  let game = init_state name has_ai in before_round game false multiplayer name
+let play_game names has_ai multiplayer  =
+  let game = init_state names has_ai in before_round game false multiplayer names
 
 let prompt_player_name call = 
   print_endline "Please type your name below: \n";
@@ -150,7 +150,6 @@ let () = main ()
 
 
 (* NOTES TO SELF:
-   3) sendingt that bool to AI.... hmm maybe part of deal in Game...?
    4) Malformed isn't being detected for some reason...?
    6) update documentation
 *)
