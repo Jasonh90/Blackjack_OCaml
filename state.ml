@@ -519,17 +519,18 @@ let print_player_hand state player =
   ANSITerminal.(print_string [cyan] (player.name^"'s hand:\n"));
   print_deck player.hand player.name
 
-let print_dealer_hidden (state : t) : unit = 
-  print_dealer_hand state false;
-  print_curr_bet (get_current_bet state);
-  show_deck state;
-  print_current_player_hand state
-
 let rec print_players_cept_dealer state = function
   | h::t when h.name <> "Dealer" -> 
     print_player_hand state h; print_players_cept_dealer state t
   | h::t -> print_players_cept_dealer state t
   | _ -> ()
+
+let print_dealer_hidden (state : t) : unit = 
+  print_dealer_hand state false;
+  print_curr_bet (get_current_bet state);
+  show_deck state;
+  (* print_current_player_hand state *) (* current player cards *)
+  print_players_cept_dealer state state.players (* all players cards *)
 
 let print_winner (state : t) = 
   print_dealer_hand state true;
