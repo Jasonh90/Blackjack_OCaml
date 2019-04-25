@@ -128,22 +128,26 @@ let space_inbtwn () = ANSITerminal.(print_string [Reset]
                                       "   ")
 let top_number card =
   ANSITerminal.(print_string [on_black; Foreground White] 
-                  (" " ^ string_of_int(card.number) ^ "       "^(if card.number < 10 then " " else ""))) 
+                  (" " ^ string_of_int(card.number) ^ "       "^
+                   (if card.number < 10 then " " else ""))) 
 let top_num n =
   ANSITerminal.(print_string [on_black; Foreground White]
                   (" " ^ n ^ "        "))
 let bottom_number card = 
   ANSITerminal.(print_string [on_black; Foreground White] 
-                  ("       "^(if card.number < 10 then " " else "") ^ string_of_int(card.number) ^ " "))
+                  ("       "^(if card.number < 10 then " " else "") ^ 
+                   string_of_int(card.number) ^ " "))
 let bot_num n = 
   ANSITerminal.(print_string [on_black; Foreground White] 
                   ("        " ^ n ^ " "))
 
 let hide_card (i : int) : unit = 
   let two_suit_top () = ANSITerminal.(print_string [on_black; Foreground White] 
-                                        ("  " ^ suit_style Spades ^ "   " ^ suit_style Diamonds ^ "   ")) in
+                                        ("  " ^ suit_style Spades ^ "   " ^ 
+                                         suit_style Diamonds ^ "   ")) in
   let two_suit_bot () = ANSITerminal.(print_string [on_black; Foreground White] 
-                                        ("  " ^ suit_style Hearts ^ "   " ^ suit_style Clubs ^ "   ")) in
+                                        ("  " ^ suit_style Hearts ^ "   " ^ 
+                                         suit_style Clubs ^ "   ")) in
   let middle () = ANSITerminal.(print_string [on_black; Foreground White] 
                                   ("  HIDDEN  ")) in
   match i with 

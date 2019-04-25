@@ -31,9 +31,10 @@ type t
     [hand], a wallet balance of [dollars], and a bet [bet_val] *)
 val make_player: string -> Game.deck -> player_status -> int -> int -> player
 
-(** [init_state player_names] creates the initial state of the game. A new deck is
+(** [init_state player_names has_ai] creates the initial state of the game. A new deck is
     created, two cards are handed to players in [player_names] and two cards are handed
-    to the 'dealer'. The first turn goes to first player in [player_names].*)
+    to the 'dealer'. The first turn goes to first player in [player_names].
+    If [has_ai] is true, add AI player to list of players. *)
 val init_state : string list -> bool -> t
 
 (** [get_current_player_name state] is the name of the current player in [state]*)
@@ -64,14 +65,15 @@ val hit : t -> t
     to point to next player*)
 val check : t -> t
 
-(** [bet state bet_val] is the updated state after the current player's bet has 
-    been changed to [bet_val] *)
+(** [bet state bet_val name] is an updated state with the [name] player's bet 
+    updated to be [bet_val]*)
 val bet : t -> int -> string -> t
 
-(** [check_game_status state] returns game_status according to all player's state. If at least 
-    one player is [Playing], return game_status [InProgress]. If all players are [Busted], return [End].
-    If there are no [Playing] player_status and at least one [Checked], return [Winner] with string
-    list of player names that won.*)
+(** [check_game_status state] returns game_status according to all player's state. 
+    If at least one player is [Playing], return game_status [InProgress]. 
+    Else, if dealer is [Busted] return [Winner] with all players that are 
+    not busted. If dealer is not [Busted], return [Winner] if dealer lost or dealer 
+    is the only winner; return [Draw] if there are players that drawed with dealer *)
 val check_game_status : t -> game_status
 
 (** [pay_up state winners] is the updated state after a round. Each winner earns 

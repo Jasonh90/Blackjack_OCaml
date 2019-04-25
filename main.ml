@@ -301,5 +301,6 @@ let () = main ()
 
 
 (* THINGS TO DO:
-   When a player loses -> take him out of game! maybe make him leave the game forcefully instead of being stuck.
+   When a player loses -> take him out of game! 
+   maybe make him leave the game forcefully instead of being stuck.
 *)

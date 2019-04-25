@@ -52,7 +52,9 @@ let restart () : used_deck = {used_cards = []; total_left = 52}
 let rec add_deck lst hand = 
   match hand with 
   |[] -> lst
-  | h :: t -> if not (List.mem_assoc (get_number h) lst) then add_deck (((get_number h),1) :: lst) t else
+  | h :: t -> if not (List.mem_assoc (get_number h) lst) then 
+      add_deck (((get_number h),1) :: lst) t 
+    else
       let current = List.assoc (get_number h) lst in 
       let new_lst = List.remove_assoc (get_number h) lst in 
       add_deck (((get_number h), current + 1) :: new_lst) t
@@ -63,7 +65,8 @@ let rec add_used_cards used (players : player list) =
   match players with
   |[] -> used
   |h :: t -> let old_used_cards = used.used_cards in 
-    add_used_cards {used with used_cards= (add_deck old_used_cards (Game.deck_to_list (h.hand)))} t
+    add_used_cards {used with used_cards = 
+                                (add_deck old_used_cards (Game.deck_to_list (h.hand)))} t
 
 let get_used_cards used = used.used_cards
 
@@ -83,9 +86,10 @@ let rec cards_in_play (state : t) : deck  =
 let make_player str hand status dollars bet_val : player = 
   { name = str; hand = hand; status = status; wallet = dollars; bet = bet_val}
 
-(** [init_state player_names] creates the initial state of the game. A new deck is
+(** [init_state player_names has_ai] creates the initial state of the game. A new deck is
     created, two cards are handed to players in [player_names] and two cards are handed
-    to the 'dealer'. The first turn goes to first player in [player_names].*)
+    to the 'dealer'. The first turn goes to first player in [player_names].
+    If [has_ai] is true, add AI player to list of players. *)
 let init_state player_names has_ai = 
   let rec create_players deck names acc = 
     match names with 
@@ -163,9 +167,9 @@ let next_player_name current players_after_current =
   | h::t -> h
   | [] -> ""
 
-(** [hit state] returns an updated state after dealing out a card to the player. If player is still
-    [Playing] status after new card is dealt, don't rotate turn. If player is [Busted],  rotate turn
-    to point to next player*)
+(** [hit state] returns an updated state after dealing out a card to the player. 
+    If player is still [Playing] status after new card is dealt, don't rotate 
+    turn. If player is [Busted],  rotate turn to point to next player*)
 let hit state = 
   let current_player = state.current_player_name in
   let rec match_player players acc = (* find current player and deal out a new card *)
@@ -223,7 +227,8 @@ let check state =
     | _ -> failwith "No such player (check)" 
   in match_player state.players []
 
-(** [bet state] is an updated state with the current players bet updated to be bet_val*)
+(** [bet state bet_val name] is an updated state with the [name] player's bet 
+    updated to be [bet_val]*)
 let bet (state : t) (bet_val : int) name : t = 
   let current_player = name in
   let rec match_player players acc = (* find current player and deal out a new card *)
@@ -287,10 +292,11 @@ let get_state_of_dealer state =
     | _ -> failwith "No such player (state of dealer)" 
   in match_dealer state.players
 
-(** [check_game_status state] returns game_status according to all player's state. If at least 
-    one player is [Playing], return game_status [InProgress]. Else, if dealer is [Busted] return [Winner]
-    with all players that are not busted. If dealer is not [Busted], return [Winner] if dealer lost or 
-    dealer is the only winner; return [Draw] if there are players that drawed with dealer *)
+(** [check_game_status state] returns game_status according to all player's state. 
+    If at least one player is [Playing], return game_status [InProgress]. 
+    Else, if dealer is [Busted] return [Winner] with all players that are 
+    not busted. If dealer is not [Busted], return [Winner] if dealer lost or dealer 
+    is the only winner; return [Draw] if there are players that drawed with dealer *)
 let check_game_status state =
   let players = state.players in
   let rec check_players players_lst : game_status = 
@@ -387,8 +393,6 @@ let get_hand player =
   player.hand 
 
 (****************************** SOCKET USAGE *********************************)
-
-
 (** [string_of_player_status ps] is the string representation of the status [ps]. *)
 let string_of_player_status = function 
   | Playing -> "Playing"
