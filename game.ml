@@ -22,8 +22,6 @@ let deck_test num suit deck =
 let make_card num suit = 
   {number=num;suit=suit}
 
-let is_in a b = List.mem a b
-
 (** [add_cards x lst a] is a list where cards (a+1) through x of each suit are 
     appended to [lst] *)
 let rec add_cards x lst a =
@@ -107,8 +105,6 @@ let get_number card =
 let deck_to_list deck : card list =
   deck
 
-
-
 (****************************** DISPLAY CARDS ********************************)
 
 let poker_chip = "\xE2\x9B\x80"
@@ -118,73 +114,6 @@ let suit_style = function
   | Clubs -> "\xE2\x99\xA3"
   | Hearts -> "\xE2\x99\xA5"
   | Diamonds -> "\xE2\x99\xA6"
-
-let print_card1 (card : card) : unit = 
-  let suit = suit_style card.suit in 
-  let next_line () = ANSITerminal.(print_string [Reset] 
-                                     "\n") in 
-  let one_suit () = ANSITerminal.(print_string [on_black; Foreground White] 
-                                    ("    " ^ suit ^ "     ")); next_line () in
-  let two_suit () = ANSITerminal.(print_string [on_black; Foreground White] 
-                                    ("   " ^ suit ^ " " ^ suit ^ "    ")); next_line () in
-  let space () = ANSITerminal.(print_string [on_black; Foreground White] 
-                                 "          "); next_line () in 
-  let top_number () = 
-    ANSITerminal.(print_string [on_black; Foreground White] 
-                    (" " ^ string_of_int(card.number) ^ "       "^(if card.number < 10 then " " else ""))); next_line () in
-  let top_num n = 
-    ANSITerminal.(print_string [on_black; Foreground White] 
-                    (" " ^ n ^ "        ")); next_line () in
-  let bottom_number () = 
-    ANSITerminal.(print_string [on_black; Foreground White] 
-                    ("       "^(if card.number < 10 then " " else "") ^ string_of_int(card.number) ^ " ")); next_line (); next_line () in 
-  let bot_num n = 
-    ANSITerminal.(print_string [on_black; Foreground White] 
-                    ("        " ^ n ^ " ")); next_line (); next_line () in 
-  match card.number with 
-  | 1 -> top_number ();
-    for i = 0 to 4 do
-      if i = 2 then one_suit ()
-      else space ()
-    done; bottom_number ()
-  | 2 -> top_number ();
-    for i = 0 to 4 do
-      if i mod 2 = 1 then one_suit () else space () done; 
-    bottom_number ()
-  | 3 -> top_number ();
-    for i = 0 to 4 do 
-      if i mod 2 = 0 then one_suit () else space () done; 
-    bottom_number ()
-  | 4 -> top_number ();
-    for i = 0 to 4 do 
-      if i mod 2 = 1 then two_suit () else space () done; 
-    bottom_number ()
-  | 5 -> top_number (); 
-    two_suit (); space (); one_suit (); space (); two_suit (); 
-    bottom_number ()
-  | 6 -> top_number ();
-    for i = 0 to 4 do
-      if i mod 2 = 0 then two_suit () else space () done;
-    bottom_number ()
-  | 7 -> top_number ();
-    two_suit (); one_suit (); two_suit (); space (); two_suit ();
-    bottom_number ()
-  | 8 -> top_number ();
-    for i = 0 to 4 do
-      if i <> 2 then two_suit () else space () done;
-    bottom_number ()
-  | 9 -> top_number ();
-    for i = 0 to 4 do
-      if i <> 1 then two_suit () else one_suit () done;
-    bottom_number ()
-  | 10 -> top_number ();
-    for i = 0 to 4 do
-      two_suit () done;
-    bottom_number ()
-  | 11 -> top_num "J"; for i = 0 to 4 do if i = 0 || i = 4 then one_suit () else space () done; bot_num "J"
-  | 12 -> top_num "Q"; for i = 0 to 4 do if i = 0 || i = 4 then one_suit () else space () done; bot_num "Q"
-  | 13 -> top_num "K"; for i = 0 to 4 do if i = 0 || i = 4 then one_suit () else space () done; bot_num "K"
-  | _ -> failwith "Wrong number"
 
 let suit card = suit_style card.suit 
 let next_line () = ANSITerminal.(print_string [Reset] 
@@ -272,19 +201,6 @@ let print_deck (deck : deck) (name : string): unit =
   next_line ()
 (* done *)
 
-(** [print_deck_col deck] is the [deck] shown in a column on screen. *)
-let rec print_deck_col (deck : deck) : unit = 
-  match deck with 
-  | [] -> ()
-  | h::t -> (print_card1 h); print_deck_col t
-
-(** [print_last_card deck] is the last card in the [deck] on screen. *)
-let rec print_last_card (deck:deck) : unit = 
-  match deck with 
-  | h::t when t = [] -> print_card1 h
-  | h::t -> print_last_card t
-  | _ -> ()
-
 (** [print_deck_hide_first deck] is the [deck] with the first card hidden on screen . *)
 let print_deck_hide_first (deck : deck) (name:string): unit = 
   for i = 0 to 6 do 
@@ -296,12 +212,15 @@ let print_deck_hide_first (deck : deck) (name:string): unit =
   done;next_line ()
 
 let deck_pile (i : int) (num : int) : unit = 
-  let two_suit_top () = ANSITerminal.(print_string [on_black; Foreground White] 
-                                        ("  " ^ suit_style Spades ^ "   " ^ suit_style Diamonds ^ "   ")) in
-  let two_suit_bot () = ANSITerminal.(print_string [on_black; Foreground White] 
-                                        ("  " ^ suit_style Hearts ^ "   " ^ suit_style Clubs ^ "   ")) in
-  let middle () = ANSITerminal.(print_string [on_black; Foreground White] 
-                                  ("    " ^ string_of_int(num) ^ (if num > 9 then "" else " ")  ^ "    ")) in
+  let two_suit_top () = ANSITerminal.(
+      print_string [on_black; Foreground White] 
+        ("  " ^ suit_style Spades ^ "   " ^ suit_style Diamonds ^ "   ")) in
+  let two_suit_bot () = ANSITerminal.(
+      print_string [on_black; Foreground White] 
+        ("  " ^ suit_style Hearts ^ "   " ^ suit_style Clubs ^ "   ")) in
+  let middle () = ANSITerminal.(
+      print_string [on_black; Foreground White] 
+        ("    " ^ string_of_int(num) ^ (if num > 9 then "" else " ")  ^ "    ")) in
   match i with 
   | n when n mod 2 = 0 -> space ()
   | 1 -> two_suit_top ()
@@ -315,4 +234,41 @@ let show_deck_pile deck num =
   ANSITerminal.(print_string [blue] ("\n\t Deck:\n"));
   for i = 0 to 6 do 
     space_inbtwn (); space_inbtwn (); deck_pile i num; next_line ()
-  done; next_line (); 
+  done; next_line ()
+
+let string_of_suit = function 
+  | Clubs -> "Clubs"
+  | Diamonds -> "Diamonds"
+  | Hearts -> "Hearts"
+  | Spades -> "Spades"
+
+let suit_of_string = function 
+  | "Clubs" -> Clubs
+  | "Diamonds" -> Diamonds
+  | "Hearts" -> Hearts
+  | "Spades" -> Spades
+  | n -> failwith (n ^ " is invalid suit.")
+
+let string_of_card c = string_of_int c.number ^ "#" ^ string_of_suit c.suit
+
+let card_of_string s = 
+  let string_delim = Str.split_delim(Str.regexp "#") s in 
+  make_card (int_of_string (List.hd string_delim)) 
+    (suit_of_string (List.nth string_delim 1))
+
+(** [string_of_deck d] is the string representation of deck [d]. Each card 
+    is separated with "@". *)
+let string_of_deck d = 
+  let rec convert (acc : string) = function
+    | [] -> acc
+    | h::t -> convert (acc ^ string_of_card h ^ (if t = [] then "" else "@")) t
+  in convert "" d
+
+(** [deck_of_string s] is the deck representation of string [s].  *)
+let deck_of_string (s : string) : deck = 
+  let string_delim = Str.split_delim(Str.regexp "@") s in
+  let rec convert acc str = 
+    match str with
+    | [] -> acc
+    | h::t -> convert (acc @ [card_of_string h]) t in 
+  convert empty_deck string_delim

@@ -5,12 +5,11 @@ open Command
 (** [dealer player_lst hand] determines the moves for dealer. If all players are [Busted] 
     dealer calls check. Otherwise, when dealer has cards totaling to 16 or less, 
     dealer calls hit. If not, dealer calls check. *)
-let dealer player_lst hand = 
-  if get_players_of_status player_lst Checked = [] then Check 
+let dealer player_lst hand state = 
+  if get_players_of_status player_lst Checked = [] then check state 
   else
     let score = calculate_score hand in
-    if score <= 17 then Hit else Check
-
+    if score <= 17 then hit state else check state
 
 (** [valid_cards ] is a list containing all the numbers that a player could receive
     on a hit without busting*)
@@ -41,6 +40,6 @@ let rec calc_total_prob valid used sum : float=
 (** [ai_turn used hand accuracy] calculates the probability that the next card 
     pulled will be a valid card and hits if this probability is greater than 
     [accuracy] otherwise the ai player checks*)
-let ai_turn used hand accuracy= 
+let ai_turn used hand accuracy state = 
   let prob = calc_total_prob (valid_cards hand) used 0.0 in 
-  if prob > accuracy then Hit else Check
+  if prob > accuracy then hit state else check state

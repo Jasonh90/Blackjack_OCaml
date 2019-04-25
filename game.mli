@@ -20,8 +20,6 @@ val deck_test : int -> suit -> deck -> deck
 
 val make_card : int -> suit -> card
 
-val is_in : card -> deck -> bool
-
 (** [shuffle lst] is a random permutation of the deck [lst]. *)
 val shuffle : deck -> deck
 
@@ -57,19 +55,17 @@ val get_number : card -> int
 (** [get_number card] is the number of [card] *)
 val deck_to_list : deck -> card list
 
+(** [string_of_deck d] is the string representation of deck [d]. Each card 
+    is separated with "@". *)
+val string_of_deck : deck -> string
 
-
+(** [deck_of_string s] is the deck representation of string [s].  *)
+val deck_of_string : string -> deck 
 
 (****************************** DISPLAY CARDS ********************************)
 
 (** [print_deck deck] is the [deck] shown side by side on screen. *)
 val print_deck : deck -> string -> unit
-
-(** [print_deck_col deck] is the [deck] shown in a column on screen. *)
-val print_deck_col : deck -> unit
-
-(** [print_last_card deck] is the last card in the [deck] on screen. *)
-val print_last_card : deck -> unit
 
 (** [print_deck_hide_first deck name] is the [deck] with the first card 
     hidden on screen with the corresponding [name]. *)
