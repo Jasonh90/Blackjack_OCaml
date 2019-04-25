@@ -24,8 +24,27 @@ type player_status =
 (** The type [player] contains player's information and status in game *)
 type player
 
+(** this type gives information about the cards played already*)
+type used_deck
+
 (** The abstract type of values representing the game state. *)
 type t
+
+(** [restart] creates a new empty type used_deck*)
+val restart : unit -> used_deck
+
+(** [add_used_cards] adds the cards from each players hand into the association
+    list recording played cards *)
+val add_used_cards : used_deck -> player list -> used_deck
+
+(** [get_used_cards] is the used_cards of [used] *)
+val get_used_cards : used_deck -> (int * int) list
+
+(** [get_total_left] is the total_left of [used]*)
+val get_total_left : used_deck -> int
+
+(** [get_used state] is the used_deck used of state*)
+val get_used : t -> used_deck
 
 (** [make_player str hand] makes a new player with name [str], starting hand 
     [hand], a wallet balance of [dollars], and a bet [bet_val] *)
@@ -92,7 +111,7 @@ val update_state : t -> t
 
 (****************************** SOCKET USAGE *********************************)
 
-
+(** [state_of_string str] parses a string and makes it into a state type t *)
 val state_of_string : string -> t
 
 (** [string_of_state s] is the string representation of the state [s]. Each item 
@@ -116,22 +135,3 @@ val print_dealer_hand : t -> bool -> unit
 
 (** [get_hand_of_name state] prints the one hidden card in the dealers hand *)
 val print_dealer_hidden : t -> unit
-
-(** this type gives information about the cards played already*)
-type used_deck
-
-(** [add_used_cards] adds the cards from each players hand into the association
-    list recording played cards *)
-val add_used_cards : used_deck -> player list -> used_deck
-
-(** [restart] creates a new empty type used_deck*)
-val restart : unit -> used_deck
-
-(** [get_used_cards] is the used_cards of [used] *)
-val get_used_cards : used_deck -> (int * int) list
-
-(** [get_total_left] is the total_left of [used]*)
-val get_total_left : used_deck -> int
-
-(** [get_used state] is the used_deck used of state*)
-val get_used : t -> used_deck

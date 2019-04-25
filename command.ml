@@ -6,14 +6,19 @@ type command =
   | Bet of int
   | Quit
 
+(** The type [game_mode] is Singleplayer if the user wants to play alone and 
+    Multiplayer if they would like to Join or Host*)
 type game_mode = 
   | Singleplayer
   | Multiplayer
 
+(** The type [socket_command] indicates if you are the host or joining *)
 type socket_command =
   | Host
   | Join of string
 
+(** The type [ai_command] indicates is Yes if the player wants the AI player to 
+    join the game and No otherwise*)
 type ai_command =
   | Yes
   | No

@@ -1,6 +1,4 @@
-(** 
-   Collection of game functions.
-*)
+(** Collection of game functions. *)
 
 (** The abstract type of values representing card suits. *)
 type suit = Clubs | Diamonds | Hearts | Spades
@@ -18,16 +16,17 @@ exception EmptyDeck
      to [deck]. This function is solely for testing. *)
 val deck_test : int -> suit -> deck -> deck
 
+(** [make_card num suit] is a card with number [num] and suit [suit] *)
 val make_card : int -> suit -> card
 
 (** [shuffle lst] is a random permutation of the deck [lst]. *)
 val shuffle : deck -> deck
 
-(** [make_deck] is a full shuffled deck of cards *)
-val make_deck : deck
-
 (** [empty_deck] is a deck containing 0 cards *)
 val empty_deck : deck
+
+(** [make_deck] is a full shuffled deck of cards *)
+val make_deck : deck
 
 (** [size deck] is the number of cards in [deck]. *)
 val size : deck -> int
@@ -52,7 +51,7 @@ val combine_cards : deck -> deck -> deck
 (** [get_number card] is the number of [card] *)
 val get_number : card -> int
 
-(** [get_number card] is the number of [card] *)
+(** [deck_to_list deck] is the card list representing [deck]*)
 val deck_to_list : deck -> card list
 
 (** [string_of_deck d] is the string representation of deck [d]. Each card 

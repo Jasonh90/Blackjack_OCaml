@@ -44,5 +44,6 @@ let ai_turn used hand accuracy state =
   let prob = calc_total_prob (valid_cards hand) used 0.0 in 
   if prob > accuracy then hit state else check state
 
+(** [ai_bet state] bets 25% of the AI players current wallet *)
 let ai_bet state = 
-  Bet ((get_player_wallet state "AI") / 4) 
+  Bet ((get_player_wallet state "AI") / 4)

@@ -19,6 +19,7 @@ exception EmptyDeck
 let deck_test num suit deck =
   deck@[{number=num; suit=suit}]
 
+(** [make_card num suit] is a card with number [num] and suit [suit] *)
 let make_card num suit = 
   {number=num;suit=suit}
 
@@ -48,9 +49,9 @@ let size (deck : deck) = List.length deck
 
 (** [deal deck hand cards_in_play num] is a tuple containing [deck] with the first 
     [num] cards removed and [hand] with the first [num] cards of [deck] appended. 
-    This checks if there's enough cards in the [deck]; if there's not enough, except 
-    the [cards_in_play]. The other cards will be shuffled back into the [deck], and the
-    original operation takes place. *)
+    This checks if there's enough cards in the [deck]; if there's not enough, 
+    except the [cards_in_play]. The other cards will be shuffled back into the 
+    [deck], and the original operation takes place. *)
 let rec deal (deck : deck) (hand : deck) (cards_in_play : deck)= function
   | 0 -> (deck, hand) 
   | num -> match deck with 
