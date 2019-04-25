@@ -90,6 +90,15 @@ val pay_up : t -> string list -> t
     Requires: [s] has its players updated with the correct money values. *)
 val update_state : t -> t
 
+(****************************** SOCKET USAGE *********************************)
+
+
+val state_of_string : string -> t
+
+(** [string_of_state s] is the string representation of the state [s]. Each item 
+    of state is delimited with "/" while each list such as player list has 
+    delimiters of "&". Each nested item is delimited with ";". *)
+val string_of_state : t -> string
 
 (****************************** DISPLAY CARDS ********************************)
 

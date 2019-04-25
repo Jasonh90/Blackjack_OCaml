@@ -153,4 +153,8 @@ let () = main ()
    3) sendingt that bool to AI.... hmm maybe part of deal in Game...?
    4) Malformed isn't being detected for some reason...?
    6) update documentation
+   ...
+   write two functions in state
+   1. make a string that reps state.
+   2. convert the string into a state. return the state
 *)

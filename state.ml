@@ -44,7 +44,7 @@ type t = {
 
 (** [restart] is a new used_deck with no bindings to be used 
     when the deck is reshuffled*)
-let restart () : used_deck = {used_cards = []; total_left = 52;}
+let restart () : used_deck = {used_cards = []; total_left = 52}
 
 (** [add_deck lst hand] is [lst] with the (num,1) appended if num was not already 
     in [lst] and (num,x+1) appended to replace the pair (num, x) if num was already 
@@ -110,7 +110,8 @@ let init_state player_names has_ai =
       used = restart ();
     }
   else (* no AI player *)
-    let deal_to_dealer = deal (fst new_players) empty_deck empty_deck 2 in (* new deck, dealer hand *)
+    (* new deck, dealer hand *)
+    let deal_to_dealer = deal (fst new_players) empty_deck empty_deck 2 in 
     let dealer = make_player "Dealer" (snd deal_to_dealer) Playing 5000 0 in
     {
       players = (snd new_players)@[dealer];
@@ -169,18 +170,32 @@ let hit state =
   let current_player = state.current_player_name in
   let rec match_player players acc = (* find current player and deal out a new card *)
     match players with 
-    | h::t -> if h.name = current_player then (
-        let deal_to_player = deal state.card_deck h.hand (cards_in_play state) 1 in (* new deck, new player hand *)
-        let new_status = if calculate_score (snd deal_to_player) > 21 then Busted else Playing in (* determine new status *)
-        let players = acc@[make_player (h.name) (snd deal_to_player) new_status h.wallet h.bet]@t in (* update current player's hand and status *)
-        (** updated state *)
-        {state with
-         players = players;
-         current_player_name = if new_status = Playing then current_player (* Playing -> don't change turns *)
-           else next_player_name current_player t; (* Busted -> find next player *)
-         card_deck = (fst deal_to_player);
-        }
-      )
+    | h::t -> if h.name = current_player 
+      then
+        begin
+          (* new deck, new player hand *)
+          let deal_to_player = 
+            deal state.card_deck h.hand (cards_in_play state) 1 in 
+          (* determine new status *)
+          let new_status = 
+            if calculate_score (snd deal_to_player) > 21 
+            then Busted 
+            else Playing in
+          (* update current player's hand and status *)
+          let players = acc@[
+              make_player (h.name) (snd deal_to_player) new_status h.wallet h.bet
+            ]@t in 
+          (** updated state *)
+          {
+            state with
+            players = players;
+            (* Playing -> don't change turns *)
+            current_player_name = if new_status = Playing then current_player 
+            (* Busted -> find next player *)
+              else next_player_name current_player t; 
+            card_deck = (fst deal_to_player);
+          }
+        end
       else match_player t (acc@[h])
     | _ -> failwith "No such player (hit)" 
   in match_player state.players []
@@ -191,15 +206,19 @@ let check state =
   let current_player = state.current_player_name in
   let rec match_player players acc = (* find current player and deal out a new card *)
     match players with 
-    | h::t -> if h.name = current_player then (
-        let players = acc@[make_player (h.name) h.hand Checked h.wallet h.bet]@t in (* update current player's status *)
-        (** updated state *)
-        { state with
-          players = players;
-          current_player_name = next_player_name current_player t; (* find next player *)
-          card_deck = state.card_deck;
-        }
-      )
+    | h::t -> if h.name = current_player 
+      then 
+        begin
+          (* update current player's status *)
+          let players = acc@[make_player (h.name) h.hand Checked h.wallet h.bet]@t in 
+          (** updated state *)
+          { state with
+            players = players;
+            (* find next player *)
+            current_player_name = next_player_name current_player t;
+            card_deck = state.card_deck;
+          }
+        end
       else match_player t (acc@[h])
     | _ -> failwith "No such player (check)" 
   in match_player state.players []
@@ -212,7 +231,8 @@ let bet (state : t) (bet_val : int) name : t =
     | h::t -> if h.name = current_player then (
         let player_dollars = h.wallet - bet_val in (* new deck, new player hand *) 
         (* update current player's hand and status *)
-        let players = acc@[make_player h.name h.hand h.status player_dollars bet_val]@t in
+        let players = 
+          acc@[make_player h.name h.hand h.status player_dollars bet_val]@t in
         (** updated state *)
         {state with
          players = players;
@@ -234,18 +254,29 @@ let rec get_winner players winner score blackjack: game_status =
       (* all players that drawed with dealer *)
       Draw (List.filter (fun name -> name<>"Dealer") winner)
     else Winner winner
-  | h::t -> if h.status = Busted then get_winner t winner score blackjack (* player busted *)
+  (* player busted *)
+  | h::t -> if h.status = Busted then get_winner t winner score blackjack 
     else ((* player not busted *)
-      if blackjack then (* Blackjack already exists *)
-        if has_blackjack h.hand then get_winner t (h.name::winner) score blackjack (* player has blackjack *)
+      (* Blackjack already exists *)
+      if blackjack then
+        (* player has blackjack *)
+        if has_blackjack h.hand then get_winner t (h.name::winner) score blackjack 
         else get_winner t winner score blackjack
       else (* no blackjack yet *)
         let player_score = calculate_score h.hand in
-        if has_blackjack h.hand then get_winner t (h.name::[]) player_score true (* player has blackjack *)
+        (* player has blackjack *)
+        if has_blackjack h.hand then get_winner t (h.name::[]) player_score true 
         else
-          (if player_score > score then get_winner t (h.name::[]) player_score blackjack
-           else if player_score = score then get_winner t (h.name::winner) score blackjack
-           else get_winner t winner score blackjack)
+          begin
+            if player_score > score 
+            then get_winner t (h.name::[]) player_score blackjack
+            else 
+              begin
+                if player_score = score 
+                then get_winner t (h.name::winner) score blackjack
+                else get_winner t winner score blackjack
+              end
+          end
     )
 
 (** [get_state_of_dealer state] gets the status of dealer. *)
@@ -267,7 +298,8 @@ let check_game_status state =
     | [] -> (
         match (get_state_of_dealer state) with
         | Checked -> get_winner players [] 0 false
-        | Busted -> Winner (get_players_of_status players Checked) (* Dealer Busted - All players who didn't bust yet wins *)
+        (* Dealer Busted - All players who didn't bust yet wins *)
+        | Busted -> Winner (get_players_of_status players Checked) 
         | _ -> failwith ""
       )
     | h::t when h.status=Playing -> InProgress
@@ -302,21 +334,25 @@ let rec pay_up (state : t) (winners : string list) : t =
       (* If dealer is in the winners list, then the player [h] receives their original
           bet, but if dealer is not in the list, then [h] gets twice their bet. (Their 
           wallet is already subtracted of their bet to begin with.) *)
-      let updated_wallet = h.wallet + h.bet * (if List.mem "Dealer" winners then 1 else 2) in
+      let updated_wallet = 
+        h.wallet + h.bet * (if List.mem "Dealer" winners then 1 else 2) in
       update_players ({h with wallet = updated_wallet; bet = 0}::acc) 
         (dealers_wallet - h.bet) t
     (* When a player lost -> they lose their bet, dealer earns *)
-    | h::t when h.name <> "Dealer" -> update_players ({h with bet = 0}::acc) (dealers_wallet + h.bet) t
+    | h::t when h.name <> "Dealer" -> 
+      update_players ({h with bet = 0}::acc) (dealers_wallet + h.bet) t
     (* Skip Dealer, add onto acc *)
     | h::t -> update_players (h::acc) dealers_wallet t
   in 
-  let players, d_wallet = update_players [] (get_player_wallet state "Dealer") (List.rev state.players) in 
+  let players, d_wallet = 
+    update_players [] (get_player_wallet state "Dealer") (List.rev state.players) in 
   (* Pay the dealer with the updated dealer wallet from the previous function. *)
   let rec pay_dealer (state : t) acc = function
     (* There shouldn't be a case when state.players is [] *)
     | [] -> failwith "No players."
     (* Return the new state with dealer's wallet updated *)
-    | h::t when h.name = "Dealer" -> {state with players = (acc@{h with bet = 0; wallet = d_wallet}::t)}
+    | h::t when h.name = "Dealer" -> 
+      {state with players = (acc@{h with bet = 0; wallet = d_wallet}::t)}
     (* Not dealer yet, keep looping... *)
     | h::t -> pay_dealer state (acc@[h]) t 
   in pay_dealer state [] players
@@ -346,16 +382,104 @@ let update_state (state : t) : t =
     used = new_used;
   }
 
-
-
-
-
-
 (** [get_hand player] is the hand of [player]*)
 let get_hand player =
   player.hand 
 
-(* WHEN RESHUFFLING, TELL AI SOMEHOW THAT THE GAME RESHUFFLED THE DECK. *)
+(****************************** SOCKET USAGE *********************************)
+
+
+(** [string_of_player_status ps] is the string representation of the status [ps]. *)
+let string_of_player_status = function 
+  | Playing -> "Playing"
+  | Checked -> "Checked"
+  | Busted -> "Busted"
+
+let player_status_of_string = function 
+  | "Playing" -> Playing
+  | "Checked" -> Checked
+  | "Busted" -> Busted
+  | n -> failwith (n ^ " is an invalid player_status.")
+
+(* Each player is separated with "&" and each player's info is sep by ";". *)
+let rec string_of_players acc = function
+  | [] -> acc
+  | h::t -> string_of_players (
+      acc ^ h.name ^ ";" ^ 
+      string_of_deck h.hand ^ ";" ^ 
+      string_of_player_status h.status ^ ";" ^ 
+      string_of_int h.wallet ^ ";" ^
+      string_of_int h.bet ^ 
+      (if t = [] then "" else "&")
+    ) t
+
+(* Assumes that the string is just one player with delimiters. *)
+let player_of_string s = 
+  let string_delim = Str.split_delim(Str.regexp ";") s in
+  make_player (List.hd string_delim) 
+    (deck_of_string (List.nth string_delim 1))
+    (player_status_of_string (List.nth string_delim 2))
+    (int_of_string (List.nth string_delim 3))
+    (int_of_string (List.nth string_delim 4))
+
+(* this is all the players. assumes the string is all the players *)
+let players_of_string s = 
+  let string_delim = Str.split_delim(Str.regexp "&") s in
+  let rec convert acc = function
+    | [] -> acc
+    | h::t -> 
+      convert (acc @ [player_of_string h]) t in 
+  convert [] string_delim
+
+let used_cards_of_string s = 
+  let string_delim = Str.split_delim(Str.regexp "&") s in
+  let rec convert acc = function
+    | [] -> acc
+    | h::t -> let intint = Str.split_delim(Str.regexp ";") h in 
+      convert (acc @ [
+          int_of_string (List.hd intint), 
+          int_of_string (List.nth intint 1)
+        ]) t in convert [] string_delim
+
+let used_deck_of_string s = 
+  let string_delim = Str.split_delim(Str.regexp "+") s in
+  {
+    used_cards = used_cards_of_string (List.hd string_delim);
+    total_left = int_of_string (List.nth string_delim 1);
+  }
+
+let state_of_string s = 
+  let string_delim = Str.split_delim(Str.regexp "/") s in
+  let players = players_of_string (List.hd string_delim) in 
+  let current_player_name = List.nth string_delim 1 in 
+  let card_deck = deck_of_string (List.nth string_delim 2) in 
+  let used = used_deck_of_string (List.nth string_delim 3) in 
+  {
+    players = players; 
+    current_player_name = current_player_name; 
+    card_deck = card_deck; 
+    used = used;
+  }
+
+let rec string_of_used_cards acc = function
+  | [] -> acc
+  | h::t -> string_of_used_cards (
+      acc ^ string_of_int (fst h) ^ ";" ^ string_of_int (snd h) ^ 
+      (if t = [] then "" else "&")
+    ) t 
+
+(** [string_of_state s] is the string representation of the state [s]. Each item 
+    of state is delimited with "/" while each list such as player list has 
+    delimiters of "&". Each nested item is delimited with ";". *)
+let string_of_state (state : t) : string = 
+  (* Turn players into a string with delimiter ";" between each item 
+      and "&" between each player *)
+  let players = string_of_players "" state.players in 
+  let current_player_name = state.current_player_name in
+  let card_deck = string_of_deck state.card_deck in
+  let used = string_of_used_cards "" state.used.used_cards ^ "+" ^
+             string_of_int state.used.total_left in
+  players ^ "/" ^ current_player_name ^ "/" ^ card_deck ^ "/" ^ used
 
 (****************************** DISPLAY CARDS ********************************)
 
@@ -411,10 +535,7 @@ let print_winner (state : t) =
   print_dealer_hand state true;
   show_deck state;
   print_players_cept_dealer state state.players
-(* let rec print = function
-   | h::t -> print_deck (get_player_hand state h.name) (h.name); print t
-   | [] -> ()
-   in print (List.rev state.players) *)
+
 
 
 
