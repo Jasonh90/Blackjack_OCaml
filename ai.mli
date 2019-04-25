@@ -31,3 +31,6 @@ val calc_total_prob : int list -> used_deck -> float -> float
     pulled will be a valid card and hits if this probability is greater than 
     [accuracy] otherwise the ai player checks *)
 val ai_turn : used_deck -> deck -> float -> State.t -> State.t
+
+(** [ai_bet state] The AI player always bets 25% of their available balance*)
+val ai_bet : State.t -> Command.command
