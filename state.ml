@@ -379,7 +379,7 @@ let update_state (state : t) : t =
     players = updated_players;
     current_player_name = (List.hd updated_players).name; 
     card_deck = updated_deck;
-    used = new_used;
+    used = {new_used with total_left = size updated_deck};
   }
 
 (** [get_hand player] is the hand of [player]*)
