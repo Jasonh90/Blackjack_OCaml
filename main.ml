@@ -117,10 +117,10 @@ let rec prompt_command state prev_invalid name =
   | Bet _ -> prompt_command state true name
   | exception Malformed -> prompt_command state true name
 
-(********************* Helper functions for game play *************************)
+(********************* Helper functions for game play ************************)
 (* [play state host_name client_sock names_lst multiplayer] handles how to 
    progress the game depending on game_status *)
-let rec play state host_name client_sock names_lst multiplayer = 
+let rec play state host_name client_sock names_lst multiplayer has_ai = 
   match check_game_status state with
   (** either (1) dealer is the only person that won OR 
       (2) non-dealer player(s) won *)
@@ -132,7 +132,7 @@ let rec play state host_name client_sock names_lst multiplayer =
             ("WIN "^(string_of_state updated_state)) in ()
       ) else () in
     let _ = print_round_end updated_state end_lst "Winner(s): " in
-    next_round updated_state names_lst multiplayer client_sock
+    next_round updated_state names_lst multiplayer client_sock has_ai
   (** multiple players won, where one of the winners is dealer *)
   | Draw end_lst -> 
     let updated_state = pay_up state end_lst in
@@ -141,8 +141,9 @@ let rec play state host_name client_sock names_lst multiplayer =
         let _ = socket_send extracted_client_sock 
             ("DRAW "^(string_of_state updated_state)) in ()
       ) else () in
-    let _ = print_round_end updated_state end_lst "Player(s) that drawed with dealer: " in
-    next_round updated_state names_lst multiplayer client_sock
+    let _ = print_round_end updated_state end_lst 
+        "Player(s) that drawed with dealer: " in
+    next_round updated_state names_lst multiplayer client_sock has_ai
   (** at least 1 player is still [Playing] status *)
   | InProgress -> 
     let current = State.get_current_player_name state in 
@@ -162,15 +163,19 @@ let rec play state host_name client_sock names_lst multiplayer =
             ("PLAY "^(string_of_state state)) in
         state_of_string (socket_receive extracted_client_sock)
       )
-    in play new_state host_name client_sock names_lst multiplayer
+    in play new_state host_name client_sock names_lst multiplayer has_ai
 
 (* [before_round state names_lst multiplayer client_sock] is the betting stage
    before the round begins.*)
-and before_round state names_lst multiplayer client_sock = 
+and before_round state names_lst multiplayer client_sock has_ai = 
   let host_name = List.hd names_lst in
   let host_bet_val = prompt_bet state false host_name in
   let new_state = 
     let temp_state = bet state host_bet_val host_name in
+    (* handle AI player betting *)
+    let temp_state = 
+      if has_ai then bet state (ai_bet state) "AI" else temp_state in
+    (* handle multiplayer betting *)
     if not multiplayer then temp_state
     else (
       print_endline "\nWaiting on another player...";
@@ -181,22 +186,21 @@ and before_round state names_lst multiplayer client_sock =
           ("BET "^(string_of_state temp_state)) in 
       state_of_string (socket_receive extracted_client_sock) 
     ) in
-  play new_state host_name client_sock names_lst multiplayer
+  play new_state host_name client_sock names_lst multiplayer has_ai
 
 (* [next_round state names_lst multiplayer client_sock] is the transition to 
    the next round. This checks who the [winners] are and correctly 
    distributes the money to the respective players or the dealer. *)
-and next_round state names_lst multiplayer client_sock = 
-  before_round (update_state state) names_lst multiplayer client_sock
+and next_round state names_lst multiplayer client_sock has_ai = 
+  before_round (update_state state) names_lst multiplayer client_sock has_ai
 
 (* [start_game names has_ai multiplayer client_sock] initializes a 
    new game state and starts the game with betting stage *)
 let start_game names has_ai multiplayer client_sock = 
   let start_state = init_state names has_ai in (* initialize game *)
-  before_round start_state names multiplayer client_sock
+  before_round start_state names multiplayer client_sock has_ai
 
 (********************* Functions for starting a game *************************)
-
 (* [wait_for_players client_sock players] listens to client socket for 
    second player's name and return a complete list of human players' names *)
 let wait_for_players client_sock players = 
@@ -244,39 +248,50 @@ let main () : unit =
       print_endline ("Players in Game: ["^host_name^"]");
       print_endline ("Waiting for players to join...");
       let _ = listen host_sock 2 in (* 2 connections max *)
-      let client_sock, client_addr = accept host_sock in (* accept client connection *)
-      let names = wait_for_players (Some client_sock) [host_name] in (* complete list of human players' names *)
+      let client_sock, client_addr = accept host_sock in 
+      (* ^^ accept client connection *)
+      let names = wait_for_players (Some client_sock) [host_name] in 
+      (* ^^ complete list of human players' names *)
       let has_ai = prompt_ai () in
       start_game names has_ai true (Some client_sock)
     | Join sock_name -> 
-      let _ = connect host_sock (socket_addr sock_name) in (* connect to host socket *)
+      let _ = connect host_sock (socket_addr sock_name) in 
+      (* ^^ connect to host socket *)
       print_endline ("Game joined at: "^sock_name);
-      let member_name = prompt_player_name () in (* get member player's name *)
+      let member_name = prompt_player_name () in
+      (* ^^ get member player's name *)
       print_endline "\nWaiting on another player...";
-      let _ = socket_send host_sock member_name in (* send member name to host socket *)
+      let _ = socket_send host_sock member_name in
+      (* ^^send member name to host socket *)
       (* [listen_to_host host] makes sure that client socket is constantly
          listening to the host socket. Processes messages received from 
          host socket *)
-      let rec listen_to_host host = (* constantly listen to messages from host socket *)
+      let rec listen_to_host host = 
+        (* ^^ constantly listen to messages from host socket *)
         let info = socket_receive host in 
         match Str.split (Str.regexp " ") info with 
         | ["BET"; state_str] -> 
           let state = state_of_string state_str in
-          let bet_val = prompt_bet state false member_name in (* prompt member to bet *)
+          let bet_val = prompt_bet state false member_name in 
+          (* ^^ prompt member to bet *)
           let new_state = bet state bet_val member_name in 
-          let _ = socket_send host_sock (string_of_state new_state) in (* send updated state to host *)
+          let _ = socket_send host_sock (string_of_state new_state) in
+          (* ^^ send updated state to host *)
           print_endline "\nWaiting on another player...";
           listen_to_host host_sock
         | ["PLAY"; state_str] ->
           let state = state_of_string state_str in
-          let new_state = prompt_command state false member_name in (* prompt member to input a command *)
-          let _ = socket_send host_sock (string_of_state new_state) in (* send updated state to host *)
+          let new_state = prompt_command state false member_name in 
+          (* ^^ prompt member to input a command *)
+          let _ = socket_send host_sock (string_of_state new_state) in
+          (* ^^ send updated state to host *)
           listen_to_host host_sock
         | ["WIN"; state_str] ->(
             let state = state_of_string state_str in
             match check_game_status state with
             | Winner end_lst ->
-              let _ = print_round_end state end_lst "Winner(s): " in (* print end results *)
+              let _ = print_round_end state end_lst "Winner(s): " in 
+              (* ^^ print end results *)
               print_endline "\nWaiting on another player...";
               listen_to_host host_sock
             | _ -> ())
@@ -284,7 +299,8 @@ let main () : unit =
             let state = state_of_string state_str in
             match check_game_status state with
             | Draw end_lst ->
-              let _ = print_round_end state end_lst  "Player(s) that drawed with dealer: " in (* print end results *)
+              let _ = print_round_end state end_lst 
+                  "Player(s) that drawed with dealer: " in (* print end results *)
               print_endline "\nWaiting on another player...";
               listen_to_host host_sock
             | _ -> ())
@@ -293,14 +309,3 @@ let main () : unit =
 
 (* Execute the game engine. *)
 let () = main ()
-
-
-(* NOTES TO SELF:
-   3) sendingt that bool to AI.... hmm maybe part of deal in Game...?
-   4) Malformed isn't being detected for some reason...?
-   6) update documentation
-   ...
-   write two functions in state
-   1. make a string that reps state.
-   2. convert the string into a state. return the state
-*)

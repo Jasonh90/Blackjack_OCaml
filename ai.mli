@@ -7,9 +7,9 @@ open State
    dealer and AI player.
 *)
 
-(** [dealer player_lst hand] determines the moves for dealer. If all players are [Busted] 
-    dealer calls check. Otherwise, when dealer has cards totaling to 16 or less, 
-    dealer calls hit. If not, dealer calls check. *)
+(** [dealer player_lst hand] determines the moves for dealer. If all players 
+    are [Busted] dealer calls check. Otherwise, when dealer has cards 
+    totaling to 16 or less, dealer calls hit. If not, dealer calls check. *)
 val dealer : player list -> deck -> State.t -> State.t
 
 (** [valid_cards hand] is a list containing all the numbers that a player could 
@@ -33,4 +33,4 @@ val calc_total_prob : int list -> used_deck -> float -> float
 val ai_turn : used_deck -> deck -> float -> State.t -> State.t
 
 (** [ai_bet state] The AI player always bets 25% of their available balance*)
-val ai_bet : State.t -> Command.command
+val ai_bet : State.t -> int

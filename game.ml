@@ -107,7 +107,6 @@ let deck_to_list deck : card list =
   deck
 
 (****************************** DISPLAY CARDS ********************************)
-
 let poker_chip = "\xE2\x9B\x80"
 
 let suit_style = function
@@ -122,29 +121,34 @@ let next_line () = ANSITerminal.(print_string [Reset]
 let one_suit card = ANSITerminal.(print_string [on_black; Foreground White] 
                                     ("    " ^ (suit card) ^ "     "))
 let two_suit card = ANSITerminal.(print_string [on_black; Foreground White] 
-                                    ("   " ^ (suit card) ^ " " ^ (suit card) ^ "    ")) 
+                                    ("   " ^ (suit card) ^ " " ^ 
+                                     (suit card) ^ "    ")) 
 let space () = ANSITerminal.(print_string [on_black] 
                                "          ")
 let space_inbtwn () = ANSITerminal.(print_string [Reset] 
                                       "   ")
 let top_number card =
   ANSITerminal.(print_string [on_black; Foreground White] 
-                  (" " ^ string_of_int(card.number) ^ "       "^(if card.number < 10 then " " else ""))) 
+                  (" " ^ string_of_int(card.number) ^ "       "^
+                   (if card.number < 10 then " " else ""))) 
 let top_num n =
   ANSITerminal.(print_string [on_black; Foreground White]
                   (" " ^ n ^ "        "))
 let bottom_number card = 
   ANSITerminal.(print_string [on_black; Foreground White] 
-                  ("       "^(if card.number < 10 then " " else "") ^ string_of_int(card.number) ^ " "))
+                  ("       "^(if card.number < 10 then " " else "") ^ 
+                   string_of_int(card.number) ^ " "))
 let bot_num n = 
   ANSITerminal.(print_string [on_black; Foreground White] 
                   ("        " ^ n ^ " "))
 
 let hide_card (i : int) : unit = 
   let two_suit_top () = ANSITerminal.(print_string [on_black; Foreground White] 
-                                        ("  " ^ suit_style Spades ^ "   " ^ suit_style Diamonds ^ "   ")) in
+                                        ("  " ^ suit_style Spades ^ "   " ^
+                                         suit_style Diamonds ^ "   ")) in
   let two_suit_bot () = ANSITerminal.(print_string [on_black; Foreground White] 
-                                        ("  " ^ suit_style Hearts ^ "   " ^ suit_style Clubs ^ "   ")) in
+                                        ("  " ^ suit_style Hearts ^ "   " ^ 
+                                         suit_style Clubs ^ "   ")) in
   let middle () = ANSITerminal.(print_string [on_black; Foreground White] 
                                   ("  HIDDEN  ")) in
   match i with 
@@ -202,7 +206,8 @@ let print_deck (deck : deck) (name : string): unit =
   next_line ()
 (* done *)
 
-(** [print_deck_hide_first deck] is the [deck] with the first card hidden on screen . *)
+(** [print_deck_hide_first deck] is the [deck] with the first card hidden on 
+    screen . *)
 let print_deck_hide_first (deck : deck) (name:string): unit = 
   for i = 0 to 6 do 
     hide_card i; space_inbtwn ();
@@ -221,7 +226,7 @@ let deck_pile (i : int) (num : int) : unit =
         ("  " ^ suit_style Hearts ^ "   " ^ suit_style Clubs ^ "   ")) in
   let middle () = ANSITerminal.(
       print_string [on_black; Foreground White] 
-        ("    " ^ string_of_int(num) ^ (if num > 9 then "" else " ")  ^ "    ")) in
+        ("    "^string_of_int(num)^(if num > 9 then "" else " ")^ "    ")) in
   match i with 
   | n when n mod 2 = 0 -> space ()
   | 1 -> two_suit_top ()
@@ -229,8 +234,8 @@ let deck_pile (i : int) (num : int) : unit =
   | 5 -> two_suit_bot ()
   | _ -> failwith "i is not in between 0..5"
 
-(** [show_deck_pile deck num] prints on the screen the [deck] facing down with the 
-    total number of cards [num] showing on top. *)
+(** [show_deck_pile deck num] prints on the screen the [deck] facing down 
+    with the total number of cards [num] showing on top. *)
 let show_deck_pile deck num = 
   ANSITerminal.(print_string [blue] ("\n\t Deck:\n"));
   for i = 0 to 6 do 

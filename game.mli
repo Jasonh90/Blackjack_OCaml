@@ -62,7 +62,6 @@ val string_of_deck : deck -> string
 val deck_of_string : string -> deck 
 
 (****************************** DISPLAY CARDS ********************************)
-
 (** [print_deck deck] is the [deck] shown side by side on screen. *)
 val print_deck : deck -> string -> unit
 

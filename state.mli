@@ -110,7 +110,6 @@ val pay_up : t -> string list -> t
 val update_state : t -> t
 
 (****************************** SOCKET USAGE *********************************)
-
 (** [state_of_string str] parses a string and makes it into a state type t *)
 val state_of_string : string -> t
 
@@ -120,7 +119,6 @@ val state_of_string : string -> t
 val string_of_state : t -> string
 
 (****************************** DISPLAY CARDS ********************************)
-
 (** [print_winner state] prints the name(s) of the winners *)
 val print_winner : t -> unit
 

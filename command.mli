@@ -42,4 +42,4 @@ val parse_socket : string -> socket_command
 
 (** [parse_ai str] parses the terminal input into a ai_command type. 
     Raise [Malformed] if command is not recognized. *)
-val parse_ai : string -> ai_command 
+val parse_ai : string -> ai_command
