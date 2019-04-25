@@ -45,3 +45,6 @@ let rec calc_total_prob valid used sum : float=
 let ai_turn used hand accuracy state = 
   let prob = calc_total_prob (valid_cards hand) used 0.0 in 
   if prob > accuracy then hit state else check state
+
+let ai_bet state = 
+  Bet ((get_player_wallet state "AI") / 4)
