@@ -117,6 +117,12 @@ let rec prompt_command state prev_invalid name =
   | Bet _ -> prompt_command state true name
   | exception Malformed -> prompt_command state true name
 
+let string_of_list lst = 
+  let rec convert acc = function 
+    | [] -> acc
+    | h::t -> convert (acc^h^(if t=[] then "" else " ")) t
+  in convert "" lst
+
 (********************* Helper functions for game play *************************)
 (* [play state host_name client_sock names_lst multiplayer] handles how to 
    progress the game depending on game_status *)
@@ -129,7 +135,7 @@ let rec play state host_name client_sock names_lst multiplayer =
     let _ = if multiplayer then ( (** send result to other player *)
         let extracted_client_sock = extract_socket client_sock in
         let _ = socket_send extracted_client_sock 
-            ("WIN "^(string_of_state updated_state)) in ()
+            ("WIN~"^string_of_list end_lst^"~"^(string_of_state updated_state)) in ()
       ) else () in
     let _ = print_round_end updated_state end_lst "Winner(s): " in
     next_round updated_state names_lst multiplayer client_sock
@@ -139,7 +145,7 @@ let rec play state host_name client_sock names_lst multiplayer =
     let _ = if multiplayer then ( (** send result to other player *)
         let extracted_client_sock = extract_socket client_sock in
         let _ = socket_send extracted_client_sock 
-            ("DRAW "^(string_of_state updated_state)) in ()
+            ("DRAW~"^string_of_list end_lst^"~"^(string_of_state updated_state)) in ()
       ) else () in
     let _ = print_round_end updated_state end_lst "Player(s) that drawed with dealer: " in
     next_round updated_state names_lst multiplayer client_sock
@@ -159,7 +165,8 @@ let rec play state host_name client_sock names_lst multiplayer =
             receives the modified state  *)
         let extracted_client_sock = extract_socket client_sock in
         let _ = socket_send extracted_client_sock 
-            ("PLAY "^(string_of_state state)) in
+            ("PLAY~"^(string_of_state state)) 
+        in
         state_of_string (socket_receive extracted_client_sock)
       )
     in play new_state host_name client_sock names_lst multiplayer
@@ -178,7 +185,7 @@ and before_round state names_lst multiplayer client_sock =
          state after member bets *)
       let extracted_client_sock = extract_socket client_sock in
       let _ = socket_send extracted_client_sock 
-          ("BET "^(string_of_state temp_state)) in 
+          ("BET~"^(string_of_state temp_state)) in 
       state_of_string (socket_receive extracted_client_sock) 
     ) in
   play new_state host_name client_sock names_lst multiplayer
@@ -259,7 +266,7 @@ let main () : unit =
          host socket *)
       let rec listen_to_host host = (* constantly listen to messages from host socket *)
         let info = socket_receive host in 
-        match Str.split (Str.regexp " ") info with 
+        match Str.split (Str.regexp "~") info with 
         | ["BET"; state_str] -> 
           let state = state_of_string state_str in
           let bet_val = prompt_bet state false member_name in (* prompt member to bet *)
@@ -271,23 +278,21 @@ let main () : unit =
           let state = state_of_string state_str in
           let new_state = prompt_command state false member_name in (* prompt member to input a command *)
           let _ = socket_send host_sock (string_of_state new_state) in (* send updated state to host *)
+          (* send host updated state after betting *)
+          let _ = socket_send host_sock (string_of_state new_state) in 
           listen_to_host host_sock
-        | ["WIN"; state_str] ->(
-            let state = state_of_string state_str in
-            match check_game_status state with
-            | Winner end_lst ->
-              let _ = print_round_end state end_lst "Winner(s): " in (* print end results *)
-              print_endline "\nWaiting on another player...";
-              listen_to_host host_sock
-            | _ -> ())
-        | ["DRAW"; state_str] -> (
-            let state = state_of_string state_str in
-            match check_game_status state with
-            | Draw end_lst ->
-              let _ = print_round_end state end_lst  "Player(s) that drawed with dealer: " in (* print end results *)
-              print_endline "\nWaiting on another player...";
-              listen_to_host host_sock
-            | _ -> ())
+        | ["WIN"; winners; state_str] ->
+          let state = state_of_string state_str in
+          let _ = print_round_end state [] ("Winner(s): " ^ winners) in
+          print_endline "\nWaiting on another player...";
+          listen_to_host host_sock
+        | ["DRAW"; x; state_str] ->
+          let state = state_of_string state_str in
+          let _ = 
+            print_round_end state [] ("Player(s) that drawed with dealer: " ^ x) 
+          in
+          print_endline "\nWaiting on another player...";
+          listen_to_host host_sock
         | _ -> listen_to_host host in
       listen_to_host host_sock
 
@@ -295,12 +300,6 @@ let main () : unit =
 let () = main ()
 
 
-(* NOTES TO SELF:
-   3) sendingt that bool to AI.... hmm maybe part of deal in Game...?
-   4) Malformed isn't being detected for some reason...?
-   6) update documentation
-   ...
-   write two functions in state
-   1. make a string that reps state.
-   2. convert the string into a state. return the state
+(* THINGS TO DO:
+   When a player loses -> take him out of game! maybe make him leave the game forcefully instead of being stuck.
 *)

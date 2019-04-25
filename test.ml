@@ -24,11 +24,11 @@ let deck1 = deck_test 13 Spades empty_deck
 let deck_lessThan18 = deck_test 7 Spades deck1 (* deck : 10, 7 *)
 let deck_greaterThan18 = deck_test 8 Spades deck1(* deck : 10, 8 *)
 
-let aiTests = 
+(* let aiTests = 
   [
     make_test2 "dealer hit" [] deck_lessThan18 Hit dealer;
     make_test2 "dealer check" [] deck_greaterThan18 Check dealer;
-  ]
+  ] *)
 
 let commandTests =
   [
@@ -67,7 +67,7 @@ let gameTests =
     make_test "No blackjack" deck_21 false has_blackjack;
   ]
 
-let init = init_state "player1"
+let init = init_state ["player1"] false
 
 let stateTests = 
   [

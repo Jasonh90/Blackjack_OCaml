@@ -98,7 +98,7 @@ let init_state player_names has_ai =
 
   if has_ai then (* include AI player *)
     let deal_to_ai = deal (fst new_players) empty_deck empty_deck 2 in (* new deck, ai hand *)
-    let ai = make_player "AI" (snd deal_to_ai) Playing 5000 0 in  
+    let ai = make_player "AI" (snd deal_to_ai) Playing 500 0 in  
     let new_players = (snd new_players)@[ai] in
     let deal_to_dealer = deal (fst deal_to_ai) empty_deck empty_deck 2 in (* new deck, dealer hand *)
     let dealer = make_player "Dealer" (snd deal_to_dealer) Playing 5000 0 in
@@ -379,7 +379,7 @@ let update_state (state : t) : t =
     players = updated_players;
     current_player_name = (List.hd updated_players).name; 
     card_deck = updated_deck;
-    used = new_used;
+    used = {new_used with total_left = size updated_deck};
   }
 
 (** [get_hand player] is the hand of [player]*)
@@ -519,17 +519,18 @@ let print_player_hand state player =
   ANSITerminal.(print_string [cyan] (player.name^"'s hand:\n"));
   print_deck player.hand player.name
 
-let print_dealer_hidden (state : t) : unit = 
-  print_dealer_hand state false;
-  print_curr_bet (get_current_bet state);
-  show_deck state;
-  print_current_player_hand state
-
 let rec print_players_cept_dealer state = function
   | h::t when h.name <> "Dealer" -> 
     print_player_hand state h; print_players_cept_dealer state t
   | h::t -> print_players_cept_dealer state t
   | _ -> ()
+
+let print_dealer_hidden (state : t) : unit = 
+  print_dealer_hand state false;
+  print_curr_bet (get_current_bet state);
+  show_deck state;
+  (* print_current_player_hand state *) (* current player cards *)
+  print_players_cept_dealer state state.players (* all players cards *)
 
 let print_winner (state : t) = 
   print_dealer_hand state true;
