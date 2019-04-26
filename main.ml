@@ -5,6 +5,10 @@ open Ai
 open Unix
 
 (********************* Helper functions for printing *************************)
+(** Each function here are helper functions all used to appropriately print out
+    the cards and display the game correctly. Each function's names are exactly
+    what the respective functions should do. *)
+
 let clear_above () = ANSITerminal.erase Above
 
 let next_line () = ANSITerminal.(print_string [Reset] "\n")
@@ -20,10 +24,12 @@ let print_quit () = clear_above ();
 let print_name name = 
   ANSITerminal.(print_string [magenta;Bold] (name^"'s hand:\n\n"))
 
+(** [print s w] prints out the cards of each player. The display changes 
+    depending on whether the round ended [w]. *)
 let print state (won : bool)= clear_above ();
   if won then print_winner state else print_dealer_hidden state
 
-(* [print_round_end state ended_players msg] prints result of the round. 
+(* [print_round_end updated_state ended_players msg] prints result of the round. 
    When user presses enter, function returns an updated state *)
 let print_round_end updated_state ended_players msg = 
   print updated_state true;
@@ -59,7 +65,7 @@ let extract_socket sock =
 
 (********************* Helper functions for prompts *************************)
 (* [prompt_player_name call] prompts player to enter name in 
-   command line and return sthe name *)
+   command line and returns the name. *)
 let prompt_player_name call = 
   print_endline "\nPlease type your name below: \n";
   print_string  "> "; 
@@ -122,6 +128,7 @@ let rec prompt_command state prev_invalid name =
   | exception Malformed -> prompt_command state true name
 
 (********************* Helper functions for game play ************************)
+
 (* [play state host_name client_sock names_lst multiplayer] handles how to 
    progress the game depending on game_status *)
 let rec play state host_name client_sock names_lst multiplayer has_ai = 
@@ -167,7 +174,8 @@ let rec play state host_name client_sock names_lst multiplayer has_ai =
             ("PLAY "^(string_of_state state)) in
         state_of_string (socket_receive extracted_client_sock)
       )
-    in play new_state host_name client_sock names_lst multiplayer has_ai
+    in print new_state false; 
+    play new_state host_name client_sock names_lst multiplayer has_ai
 
 (* [before_round state names_lst multiplayer client_sock] is the betting stage
    before the round begins.*)
@@ -175,10 +183,10 @@ and before_round state names_lst multiplayer client_sock has_ai =
   let host_name = List.hd names_lst in
   let host_bet_val = prompt_bet state false host_name in
   let new_state = 
-    let temp_state = bet state host_bet_val host_name in
     (* handle AI player betting *)
     let temp_state = 
-      if has_ai then bet state (ai_bet state) "AI" else temp_state in
+      if has_ai then bet (bet state (ai_bet state) "AI") host_bet_val host_name
+      else bet state host_bet_val host_name in
     (* handle multiplayer betting *)
     if not multiplayer then temp_state
     else (
@@ -205,8 +213,9 @@ let start_game names has_ai multiplayer client_sock =
   before_round start_state names multiplayer client_sock has_ai
 
 (********************* Functions for starting a game *************************)
-(* [wait_for_players client_sock players] listens to client socket for 
-   second player's name and return a complete list of human players' names *)
+
+(** [wait_for_players client_sock players] listens to client socket for 
+    second player's name and return a complete list of human players' names *)
 let wait_for_players client_sock players = 
   let extracted_client_sock = extract_socket client_sock in
   (* [concat_names lst acc] return string of format:
@@ -229,7 +238,8 @@ let rec main prev_invalid : unit =
   ANSITerminal.(print_string [white;Bold]
                   "\nWelcome to Blackjack.\n");
   (* select player mode *)
-  print_endline "\nSelect game mode: [single] or [multi]\n*Multiplayer mode: max 2 players*"; 
+  print_endline "\nSelect game mode: [single] or [multi]\n\
+                 *Multiplayer mode: max 2 players*"; 
   print_string  "> ";
   let x = read_line () in
   match parse_game_mode x with
@@ -293,24 +303,28 @@ let rec main prev_invalid : unit =
             let _ = socket_send host_sock (string_of_state new_state) in
             (* ^^ send updated state to host *)
             listen_to_host host_sock
-          | ["WIN"; state_str] ->(
+          | ["WIN"; state_str] ->
+            begin
               let state = state_of_string state_str in
               match check_game_status state with
               | Winner end_lst ->
-                let _ = print_round_end state end_lst "Winner(s): " in 
-                (* ^^ print end results *)
+                (* print end results *)
+                print_round_end state end_lst "Winner(s): ";
                 print_endline "\nWaiting on another player...";
                 listen_to_host host_sock
-              | _ -> ())
-          | ["DRAW"; state_str] -> (
+              | _ -> ()
+            end
+          | ["DRAW"; state_str] -> 
+            begin
               let state = state_of_string state_str in
               match check_game_status state with
               | Draw end_lst ->
-                let _ = print_round_end state end_lst 
-                    "Player(s) that drawed with dealer: " in (* print end results *)
+                (* print end results *)
+                print_round_end state end_lst "Player(s) that drawed with dealer: ";
                 print_endline "\nWaiting on another player...";
                 listen_to_host host_sock
-              | _ -> ())
+              | _ -> ()
+            end
           | _ -> listen_to_host host in
         listen_to_host host_sock in
     player_parser ()

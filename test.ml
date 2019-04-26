@@ -24,12 +24,6 @@ let deck1 = deck_test 13 Spades empty_deck
 let deck_lessThan18 = deck_test 7 Spades deck1 (* deck : 10, 7 *)
 let deck_greaterThan18 = deck_test 8 Spades deck1(* deck : 10, 8 *)
 
-let aiTests = 
-  [
-    make_test2 "dealer hit" [] deck_lessThan18 Hit dealer;
-    make_test2 "dealer check" [] deck_greaterThan18 Check dealer;
-  ]
-
 let commandTests =
   [
     make_test "Command 1" "HIT" Hit parse;
@@ -43,9 +37,13 @@ let commandTests =
   ]
 
 let empty = empty_deck
-let blackjack = deck_test 11 Diamonds (deck_test 1 Spades empty) (* deck : ace, face *)
-let deck_5 = deal make_deck blackjack empty_deck 3 (* deck : ace, face + 3 more unknown cards *)
-let deck_21 = deck_test 1 Spades (deck_test 1 Hearts (deck_test 8 Diamonds (deck_test 1 Clubs empty))) (* deck : ace, ace, ace, 8 *)
+(* deck : ace, face *)
+let blackjack = deck_test 11 Diamonds (deck_test 1 Spades empty) 
+(* deck : ace, face + 3 more unknown cards *)
+let deck_5 = deal make_deck blackjack empty_deck 3 
+(* deck : ace, ace, ace, 8 *)
+let deck_21 = deck_test 1 
+    Spades (deck_test 1 Hearts (deck_test 8 Diamonds (deck_test 1 Clubs empty))) 
 let cards_in_play_shuffle = deal make_deck empty_deck empty_deck 50
 let first = fst cards_in_play_shuffle
 let second = snd cards_in_play_shuffle
@@ -67,7 +65,7 @@ let gameTests =
     make_test "No blackjack" deck_21 false has_blackjack;
   ]
 
-let init = init_state "player1"
+let init = init_state ["player1"] false
 
 let stateTests = 
   [
@@ -78,6 +76,7 @@ let stateTests =
 let suite = "test suites" >::: List.flatten [
     commandTests;
     gameTests;
+    stateTests;
   ]
 
 let _ = run_test_tt_main suite

@@ -24,7 +24,7 @@ type player_status =
 (** The type [player] contains player's information and status in game *)
 type player
 
-(** this type gives information about the cards played already*)
+(** this type gives information about the cards played already. *)
 type used_deck
 
 (** The abstract type of values representing the game state. *)
@@ -55,23 +55,23 @@ val make_player: string -> Game.deck -> player_status -> int -> int -> player
     to the 'dealer'. The first turn goes to first player in [player_names].*)
 val init_state : string list -> bool -> t
 
-(** [get_current_player_name state] is the name of the current player in [state]*)
+(** [get_current_player_name state] is the name of the current player in [state]. *)
 val get_current_player_name : t -> string
 
-(** [get_players_list state] gets list of player*)
+(** [get_players_list state] gets list of player. *)
 val get_players_list : t -> player list
 
-(** [get_hand_of_name state] is the hand of [name] *)
+(** [get_hand_of_name state] is the hand of [name]. *)
 val get_player_hand : t -> string -> Game.deck
 
-(** [get_player_bet state name] is the bet of [name] *)
+(** [get_player_bet state name] is the bet of [name]. *)
 val get_player_bet : t -> string -> int
 
-(** [get_player_wallet_by_name] is the wallet of [name] *)
+(** [get_player_wallet_by_name] is the wallet of [name]. *)
 val get_player_wallet : t -> string -> int
 
-(** [get_players_of_status player_lst status] returns list of player names that 
-    have player_status [status]*)
+(** [get_players_of_status player_lst status] returns list of player names within
+    [player_lst] that has a player_status of [status]. *)
 val get_players_of_status : player list -> player_status -> string list
 
 (** [hit state] is an updated state after dealing out a card to the current player.   
@@ -87,10 +87,11 @@ val check : t -> t
     been changed to [bet_val] *)
 val bet : t -> int -> string -> t
 
-(** [check_game_status state] returns game_status according to all player's state. If at least 
-    one player is [Playing], return game_status [InProgress]. If all players are [Busted], return [End].
-    If there are no [Playing] player_status and at least one [Checked], return [Winner] with string
-    list of player names that won.*)
+(** [check_game_status state] returns game_status according to all player's state. 
+    If at least one player is [Playing], return game_status [InProgress]. If all 
+    players are [Busted], return [End]. If there are no [Playing] player_status 
+    and at least one [Checked], return [Winner] with string list of player names 
+    that won. *)
 val check_game_status : t -> game_status
 
 (** [pay_up state winners] is the updated state after a round. Each winner earns 
@@ -110,6 +111,7 @@ val pay_up : t -> string list -> t
 val update_state : t -> t
 
 (****************************** SOCKET USAGE *********************************)
+
 (** [state_of_string str] parses a string and makes it into a state type t *)
 val state_of_string : string -> t
 
@@ -119,6 +121,7 @@ val state_of_string : string -> t
 val string_of_state : t -> string
 
 (****************************** DISPLAY CARDS ********************************)
+
 (** [print_winner state] prints the name(s) of the winners *)
 val print_winner : t -> unit
 
