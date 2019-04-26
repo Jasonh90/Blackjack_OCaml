@@ -229,7 +229,7 @@ let rec main prev_invalid : unit =
   ANSITerminal.(print_string [white;Bold]
                   "\nWelcome to Blackjack.\n");
   (* select player mode *)
-  print_endline "\nSelect game mode: [single] or [multi]\n"; 
+  print_endline "\nSelect game mode: [single] or [multi]\n*Multiplayer mode: max 2 players*"; 
   print_string  "> ";
   let x = read_line () in
   match parse_game_mode x with
